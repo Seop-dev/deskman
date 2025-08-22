@@ -39,4 +39,5 @@ const getConnection = async () => {
 
 module.exports = {
   query,
+  getConnection,
 };

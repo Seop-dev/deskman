@@ -14,7 +14,6 @@
       :columnDefs="criteriaCols"
       :defaultColDef="defaultColDef"
       :rowSelection="rowSelection"
-      :selectionColumnDef="selectionColumnDef"
       :gridOptions="criteriaGridOptions"
       :theme="quartz"
       style="height: 280px; width: 100%"
@@ -33,9 +32,10 @@
         </div>
       </v-col>
     </v-row>
+
     <!-- 불합격 사유 입력 섹션 -->
     <v-card v-show="finalStatus === '불합격'" class="mb-4" elevation="2">
-      <v-card-title class="bg-red-lighten-5 text-red-darken-2"> </v-card-title>
+      <v-card-title class="bg-red-lighten-5 text-red-darken-2">불합격 사유</v-card-title>
       <v-card-text>
         <v-textarea
           v-model="defectReason.description"
@@ -70,11 +70,12 @@ import { useRoute } from 'vue-router';
 import { AgGridVue } from 'ag-grid-vue3';
 import { ModuleRegistry, themeQuartz, ClientSideRowModelModule, RowSelectionModule, ValidationModule } from 'ag-grid-community';
 
-// 모듈 등록 (개발 모드에서만 Validation)
+// 모듈 등록
 ModuleRegistry.registerModules([ClientSideRowModelModule, RowSelectionModule, ...(import.meta.env.PROD ? [] : [ValidationModule])]);
 
 const quartz = themeQuartz;
 const route = useRoute();
+
 /* breadcrumb */
 const page = ref({ title: '제품 검수관리 등록' });
 const breadcrumbs = ref([
@@ -83,35 +84,29 @@ const breadcrumbs = ref([
 ]);
 
 /* ------------ 1) 검사기준 그리드 (선택=합격) ------------ */
-// 행 데이터 (rowId로 쓸 고유 키 _id 포함)
+// 행 데이터 (고유한 _id 사용)
 const criteriaRows = ref([
   { _id: 'moisture', label: '함수율', allow: '수분 함량 12~15% (KS범위)', value: '' },
-  { _id: 'moisture', label: '치수정밀도', allow: '입고자재 ±2mm 이내', value: '' },
-  { _id: 'moisture', label: '강도/내구성', allow: '횡강도 35MPa 이상', value: '' },
-  { _id: 'appearance', label: '안정성', allow: '전도 없음, 전기부 안전, 모서리 등금 위험요소 없음', value: '' },
-  { _id: 'thickness', label: '왼관 결점', allow: '옹이, 할렬, 긁힘 육안확인 시 결점이 없을 시', value: '' },
-  { _id: 'strength', label: '포름알데히드 방출률', allow: '친환경 E0 등급(0.3mg/L)이하', value: '' },
+  { _id: 'dimension', label: '치수정밀도', allow: '입고자재 ±2mm 이내', value: '' },
+  { _id: 'strength', label: '강도/내구성', allow: '횡강도 35MPa 이상', value: '' },
+  { _id: 'stability', label: '안정성', allow: '전도 없음, 전기부 안전, 모서리 등금 위험요소 없음', value: '' },
+  { _id: 'defects', label: '왼관 결점', allow: '옹이, 할렬, 긁힘 육안확인 시 결점이 없을 시', value: '' },
+  { _id: 'formaldehyde', label: '포름알데히드 방출률', allow: '친환경 E0 등급(0.3mg/L)이하', value: '' },
   { _id: 'surface', label: '표면 마감/도장', allow: '도맏 들뜸 박리 없음, 균일한 색상 광택 유지', value: '' }
 ]);
 
 const criteriaApi = shallowRef(null);
 
-const defaultColDef = ref({ resizable: true, minWidth: 120, sortable: false });
-
-const rowSelection = ref({ mode: 'multiRow' });
-
-const selectionColumnDef = ref({
-  headerName: '판정',
-  pinned: 'right',
-  width: 90,
-  headerCheckboxSelection: true,
-  headerCheckboxSelectionCurrentPageOnly: false,
-  checkboxSelection: true,
-  suppressHeaderMenuButton: true
+const defaultColDef = ref({
+  resizable: true,
+  minWidth: 120,
+  sortable: false
 });
 
+const rowSelection = ref('multiple');
+
 const criteriaCols = ref([
-  { headerName: '검사기준', field: 'label', minWidth: 160, flex: 1 },
+  { headerName: '검사명', field: 'label', minWidth: 160, flex: 1 },
   { headerName: '허용수치', field: 'allow', minWidth: 360, flex: 2 },
   { headerName: '측정값', field: 'value', minWidth: 360, flex: 2, editable: true },
   {
@@ -122,49 +117,72 @@ const criteriaCols = ref([
     valueGetter: (p) => (p.node?.isSelected() ? '합격' : '불합격'),
     cellClass: (p) => (p.value == '합격' ? 'ag-cell-success' : 'ag-cell-error'),
     sortable: false
+  },
+  {
+    headerName: '선택',
+    checkboxSelection: true,
+    headerCheckboxSelection: true,
+    width: 80,
+    pinned: 'right',
+    suppressMenu: true,
+    sortable: false,
+    filter: false
   }
 ]);
 
 const criteriaGridOptions = ref({
-  defaultColDef: defaultColDef.value
+  defaultColDef: defaultColDef.value,
+  rowSelection: 'multiple',
+  suppressRowClickSelection: true,
+  getRowId: (params) => params.data._id
 });
 
 // 합격/불합격 계산
 const totalCount = ref(0);
 const selectedCount = ref(0);
-const finalStatus = computed(() => (selectedCount.value == totalCount.value ? '합격' : '불합격'));
+const finalStatus = computed(() => (selectedCount.value === totalCount.value ? '합격' : '불합격'));
 
 function onCriteriaReady(e) {
   criteriaApi.value = e.api;
+  console.log('AG-Grid 준비 완료');
 }
 
 function selectAllCriteria(e) {
-  // 기본값: 전부 합격(전체 선택)
-  const nodes = [];
-  e.api.forEachNode((n) => nodes.push(n));
-  e.api.setNodesSelected({ nodes, newValue: true });
-  recalcCriteria();
+  try {
+    // 기본값: 전부 합격(전체 선택)
+    e.api.selectAll();
+    recalcCriteria();
+  } catch (error) {
+    console.error('전체 선택 오류:', error);
+  }
 }
 
 function recalcCriteria() {
   const api = criteriaApi.value;
   if (!api) return;
-  totalCount.value = api.getDisplayedRowCount();
-  selectedCount.value = api.getSelectedNodes().length;
-  api.refreshCells({ columns: ['result'], force: true });
+
+  try {
+    totalCount.value = api.getDisplayedRowCount();
+    selectedCount.value = api.getSelectedNodes().length;
+    api.refreshCells({ columns: ['result'], force: true });
+    console.log(`재계산 완료: ${selectedCount.value}/${totalCount.value}, 상태: ${finalStatus.value}`);
+  } catch (error) {
+    console.error('재계산 오류:', error);
+  }
 }
 
 /* ------------ 2) 하단 입력 그리드(1행) ------------ */
 const detailRows = ref([
   {
-    certid: '(함수실행)',
-    prdCode: '(자동입력)',
-    prdName: '(자동입력)',
-    prdType: '(자동입력)',
-    totalQty: '(자동입력)',
-    writer: '(세션id)',
-    finished_at: '(자동입력)',
-    certDate: '(오늘날짜)'
+    certid: '(자동생성)',
+    tpId: 0,
+    prdCode: '',
+    prdName: '',
+    prdType: '',
+    totalQty: 0,
+    writer: '',
+    finished_at: '',
+    certDate: ''
   }
 ]);
 
@@ -189,108 +207,137 @@ const detailGridOptions = ref({
   autoSizeStrategy: { type: 'fitGridWidth' }
 });
 
-// 각종버튼
-function resetForm() {
-  // 검사기준: 전부 불합격(선택 해제)
-  const api = criteriaApi.value;
-  if (api) {
-    const nodes = [];
-    api.forEachNode((n) => nodes.push(n));
-    api.setNodesSelected({ nodes, newValue: false });
-    recalcCriteria();
-  }
-  // 하단 디테일 초기화
-  const r = detailRows.value[0];
-  r.totalQty = 0;
-  r.passQty = 0;
-  r.user = '';
-  r.inDate = '';
-  r.doneDate = '';
-}
-
 // 불합격 사유 관련 데이터
 const defectReason = ref({
   description: ''
 });
 
-async function saveForm() {
-  const d = detailRows.value[0];
-  const isPass = finalStatus.value === '합격'; // ← boolean
-
-  // 디버깅 로그
-  console.log('[saveForm] finalStatus:', finalStatus.value, 'isPass:', isPass);
-
-  // 불합격이면 사유 필수
-  if (!isPass && !defectReason.value.description.trim()) {
-    alert('불합격 사유를 입력해주세요.');
-    return;
-  }
-
-  // 검사기준 → 결과배열(필요시)
-  const api = criteriaApi.value;
-  const results = [];
-  if (api) {
-    api.forEachNode((node) => {
-      const r = node.data; // {label, allow, value}
-      results.push({
-        stdName: r.label,
-        allowedItem: r.label,
-        measuredValue: String(r.value ?? ''),
-        status: node.isSelected() ? '합격' : '불합격'
-      });
-    });
-  }
-  console.log('[saveForm] results:', results);
-
+// 수정된 초기화 함수 - 전체 선택으로 변경
+function resetForm() {
   try {
-    if (isPass) {
-      // ✅ 합격: 헤더만 등록
-      const payload = {
-        TP_ID: d.tpId || Number(route.query.wo_no || 0),
-        PRD_CODE: d.prdCode,
-        PRD_NAME: d.prdName,
-        PRD_TYPE: d.prdType,
-        TOTAL_QTY: Number(d.totalQty) || 0,
-        Q_CHECKED_DATE: d.certDate, // 'YYYY-MM-DD'
-        CREATED_BY: d.writer
-      };
-      console.log('[saveForm] POST /passprd', payload);
-      await axios.post('http://localhost:3000/passprd', payload);
-      alert('합격 제품이 등록되었습니다!');
-    } else {
-      // ❌ 불합격: 헤더(불합격) + 상세 동시 트랜잭션 (백엔드가 처리)
-      const payload = {
-        TP_ID: d.tpId || Number(route.query.wo_no || 0),
-        PRD_CODE: d.prdCode,
-        PRD_NAME: d.prdName,
-        PRD_TYPE: d.prdType,
-        TOTAL_QTY: Number(d.totalQty) || 0,
-        Q_CHECKED_DATE: d.certDate,
-        CREATED_BY: d.writer,
-        RJT_CODE: 'MANUAL', // 필요 시 화면에서 선택값 사용
-        RJT_REASON: defectReason.value.description.trim()
-      };
-      console.log('[saveForm] POST /rejectprd', payload);
-      await axios.post('http://localhost:3000/rejectprd', payload);
-      alert('불합격 제품이 등록되었습니다!');
+    // 검사기준: 전부 합격으로 초기화 (전체 선택)
+    const api = criteriaApi.value;
+    if (api) {
+      api.selectAll(); // deselectAll() -> selectAll()로 변경
+      recalcCriteria();
     }
-  } catch (err) {
-    console.error('[saveForm] ERROR:', err);
-    alert('등록 중 오류가 발생했습니다.');
+
+    // 불합격 사유 초기화
+    defectReason.value.description = '';
+
+    // 측정값 초기화
+    criteriaRows.value.forEach((row) => {
+      row.value = '';
+    });
+
+    console.log('폼이 초기화되었습니다. (전체 합격 상태)');
+  } catch (error) {
+    console.error('초기화 오류:', error);
   }
 }
 
-// 클릭한 행의 내용가져오기
+async function saveForm() {
+  try {
+    const d = detailRows.value[0];
+    const isPass = finalStatus.value === '합격';
+
+    console.log('[saveForm] 시작 - 상태:', finalStatus.value, 'isPass:', isPass);
+    console.log('[saveForm] 선택된 항목 수:', selectedCount.value, '/', totalCount.value);
+
+    // 불합격이면 사유 필수 검증
+    if (!isPass && !defectReason.value.description.trim()) {
+      alert('불합격 사유를 입력해주세요.');
+      return;
+    }
+
+    // 검사기준 결과 수집
+    const api = criteriaApi.value;
+    const results = [];
+    if (api) {
+      api.forEachNode((node) => {
+        const r = node.data;
+        results.push({
+          stdName: r.label,
+          allowedItem: r.allow,
+          measuredValue: String(r.value ?? ''),
+          status: node.isSelected() ? '합격' : '불합격'
+        });
+      });
+    }
+    console.log('[saveForm] 검사 결과:', results);
+
+    // detailRows 데이터 사용하도록 수정
+    if (isPass) {
+      // 합격 처리
+      const payload = {
+        TP_ID: d.tpId,
+        PRD_CODE: d.prdCode,
+        PRD_NAME: d.prdName,
+        PRD_TYPE: d.prdType,
+        TOTAL_QTY: d.totalQty,
+        Q_CHECKED_DATE: d.certDate,
+        CREATED_BY: d.writer
+      };
+
+      console.log('[saveForm] POST /passprd', payload);
+      const response = await axios.post('http://localhost:3000/passprd', payload);
+
+      if (response.data.ok) {
+        alert('합격 제품이 등록되었습니다!');
+      }
+    } else {
+      // 불합격 처리
+      const payload = {
+        TP_ID: d.tpId,
+        PRD_CODE: d.prdCode,
+        PRD_NAME: d.prdName,
+        PRD_TYPE: d.prdType,
+        TOTAL_QTY: d.totalQty,
+        Q_CHECKED_DATE: d.certDate,
+        CREATED_BY: d.writer,
+        RJT_REASON: defectReason.value.description.trim()
+      };
+
+      console.log('[saveForm] POST /rejectprd', payload);
+      const response = await axios.post('http://localhost:3000/rejectprd', payload);
+
+      if (response.data.ok) {
+        alert('불합격 제품이 등록되었습니다!');
+        console.log('등록된 인증서 ID:', response.data.prdCertId);
+      }
+    }
+  } catch (err) {
+    console.error('[saveForm] ERROR:', err);
+
+    // 에러 응답에서 메시지 추출
+    let errorMessage = '등록 중 오류가 발생했습니다.';
+    if (err.response?.data?.message) {
+      errorMessage = err.response.data.message;
+    } else if (err.message) {
+      errorMessage = err.message;
+    }
+
+    alert(errorMessage);
+  }
+}
+
+// 컴포넌트 마운트 시 초기화
 onMounted(() => {
-  const r = detailRows.value[0];
-  r.tpId = Number(route.query.wo_no || 0); // 지시번호 저장하고
-  r.prdCode = String(route.query.product_code || '');
-  r.prdName = String(route.query.product_name || '');
-  r.prdType = String(route.query.product_type || '');
-  r.totalQty = Number(route.query.qty || 0);
-  r.writer = String(route.query.writer || '');
-  r.finished_at = String(route.query.finished_at || '');
-  r.certDate = new Date().toISOString().slice(0, 10);
+  try {
+    const r = detailRows.value[0];
+    r.tpId = Number(route.query.wo_no || 0);
+    r.prdCode = String(route.query.product_code || '');
+    r.prdName = String(route.query.product_name || '');
+    r.prdType = String(route.query.product_type || '');
+    r.totalQty = Number(route.query.qty || 0);
+    r.writer = String(route.query.writer || '');
+    r.finished_at = String(route.query.finished_at || '');
+    r.certDate = new Date().toISOString().slice(0, 10);
+
+    console.log('초기 데이터 로드 완료:', r);
+  } catch (error) {
+    console.error('초기 데이터 로드 오류:', error);
+  }
 });
 </script>
 
@@ -308,6 +355,7 @@ onMounted(() => {
   margin-left: auto;
 }
 .ag-cell-success {
+  color: #2e7d32;
   font-weight: 600;
 }
 .ag-cell-error {

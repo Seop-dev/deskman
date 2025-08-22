@@ -42,6 +42,7 @@ const matManagement = `
 SELECT RECEIPT_NO, RECEIPT_DATE, SUPPLYER, MAT_CODE, RECEIVED_QTY, TMP_STATUS
 FROM MAT_IN_TMP
 WHERE TMP_STATUS = '검수 대기'
+ORDER BY =
 `;
 
 // 합격원자재 등록
@@ -74,7 +75,7 @@ const passPrd = `
 INSERT INTO PRODUCT_CERTIFICATE
  (PRD_CERT_ID, TP_ID, PRD_CODE, PRD_NAME, TOTAL_QTY, PRD_TYPE, Q_CHECKED_DATE, PRD_STATUS, CREATED_BY)
 VALUES
- (GetNextPRD_CERT_ID(), ?, ?, ?, ?, ?, ?, '불합격', ?)
+ (GetNextPRD_CERT_ID(), ?, ?, ?, ?, ?, ?, '합격', ?)
 `;
 
 // 불합격제품등록
