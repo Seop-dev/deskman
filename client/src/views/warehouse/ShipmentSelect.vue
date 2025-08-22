@@ -107,7 +107,7 @@ const wrShip = async () => {
     출하번호: emp.SHIP_NO,
     창고번호: emp.WR_NO,
     주문번호: emp.REQ_ID,
-    납기일자: emp.D_DAY.substring(0, 10),
+    납기일자: emp.D_DAY ? emp.D_DAY.substring(0, 10) : null,
     LOT번호: emp.PRD_LOT,
     제품명: emp.PRD_NAME,
     출하수량: emp.QTY,

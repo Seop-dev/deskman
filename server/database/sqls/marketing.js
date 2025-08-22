@@ -197,8 +197,12 @@ ORDER BY pr.RECEIVED_DATE DESC
 `;
 
 // 출하지시서 등록버튼
-const shipInsert = `INSERT INTO SHIPMENT (SHIP_NO,REQ_ID,CUS_ID,PRD_LOT,PRD_NAME,SHIP_ORDER_DATE,SHIP_WRITER,WR_NAME,PRD_CODE,PRD_NAME,QTY,D_DAY)
-VALUES (GetNextShip_NO(),?,?,?,?,?,?,?,?,?,?,?)`;
+const shipInsert = `INSERT INTO SHIPMENT (
+  SHIP_NO,REQ_ID,CUS_ID,PRD_LOT,
+  SHIP_ORDER_DATE,SHIP_WRITER,WR_NAME,
+  PRD_CODE,PRD_NAME,QTY,D_DAY
+)
+VALUES (GetNextShip_NO(), ?,?,?,?,?,?,?,?,?,?)`;
 
 module.exports = {
   insertAccount,
