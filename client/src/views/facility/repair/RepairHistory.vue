@@ -37,6 +37,11 @@ import BaseBreadcrumb from '@/components/shared/BaseBreadcrumb.vue';
 import UiParentCard from '@/components/shared/UiParentCard.vue';
 import { AgGridVue } from 'ag-grid-vue3';
 import { AllCommunityModule, ModuleRegistry, themeQuartz } from 'ag-grid-community';
+import { useToast } from 'vue-toast-notification';
+import 'vue-toast-notification/dist/theme-bootstrap.css';
+
+// toast
+const $toast = useToast();
 
 // ag-grid 등록
 ModuleRegistry.registerModules([AllCommunityModule]);
@@ -124,6 +129,7 @@ const loadRepairs = async () => {
   } catch (e) {
     console.error('loadRepairs error', e);
     rawItems.value = [];
+    $toast.error('수리 내역 불러오기 실패', { position: 'top-right', duration: 1000 });
   }
 };
 onMounted(loadRepairs);

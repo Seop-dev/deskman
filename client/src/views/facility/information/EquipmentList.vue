@@ -50,11 +50,16 @@ import { AllCommunityModule, ModuleRegistry, themeQuartz } from 'ag-grid-communi
 ModuleRegistry.registerModules([AllCommunityModule]);
 const quartz = themeQuartz;
 
-/* ─ API (프리픽스 없이) ─ */
-const API_FAC_STATUS = 'http://localhost:3000/facility/status'; // 최신 상태 포함
-const API_PROCESS = 'http://localhost:3000/process'; // 공정 목록(모달)
-const API_CODES_FC = 'http://localhost:3000/common/codes/FC'; // 설비유형
-const API_CODES_RR = 'http://localhost:3000/common/codes/RR'; // 고장유형
+/* ─ toast ─ */
+import { useToast } from 'vue-toast-notification';
+import 'vue-toast-notification/dist/theme-bootstrap.css';
+const $toast = useToast();
+
+/* ─ API ─ */
+const API_FAC_STATUS = 'http://localhost:3000/facility/status';
+const API_PROCESS = 'http://localhost:3000/process';
+const API_CODES_FC = 'http://localhost:3000/common/codes/FC';
+const API_CODES_RR = 'http://localhost:3000/common/codes/RR';
 
 /* ─ 상태 ─ */
 const processCode = ref('');
@@ -62,8 +67,8 @@ const processName = ref('');
 const form = reactive({ items: [] });
 
 /* ─ 코드 라벨 맵 ─ */
-const FC_LABEL = ref({}); // 설비유형 라벨
-const RR_LABEL = ref({}); // 고장유형 라벨
+const FC_LABEL = ref({});
+const RR_LABEL = ref({});
 const buildLabelMap = (list) =>
   (Array.isArray(list) ? list : []).reduce((acc, r) => {
     if (r?.code) acc[r.code] = r.code_name ?? r.code;
@@ -93,7 +98,7 @@ const columnDefs = ref([
   { field: '설비제조일', flex: 1 },
   { field: '설비설치일', flex: 1 },
   { field: '점검주기일', flex: 1 },
-  { headerName: '고장유형', field: '고장유형', flex: 1 },
+  { field: '고장유형', flex: 1 },
   { field: '담당자', flex: 1 }
 ]);
 
@@ -113,13 +118,12 @@ const applyProcessFilter = (procCode) => {
   gridApi.value.onFilterChanged();
 };
 
-/* ─ 목록 매핑 ─
-   /facility/status 응답에 FS_TYPE(고장유형) 포함됨 */
+/* ─ 목록 매핑 ─ */
 const mapRow = (r) => ({
   공정코드: r.PR_ID ?? '',
   설비코드: r.FAC_ID ?? '',
   설비명: r.FAC_NAME ?? '',
-  FAC_TYPE: r.FAC_TYPE ?? '', // 라벨은 컬럼 valueGetter에서 처리
+  FAC_TYPE: r.FAC_TYPE ?? '',
   사용유무: (r.FAC_USE ?? 1) === 1 ? '사용' : '정지',
   제조사: r.FAC_COMPANY ?? '',
   설비제조일: fmtDate(r.FAC_MDATE),
@@ -142,15 +146,15 @@ const fetchList = async () => {
 };
 onMounted(async () => {
   try {
-    await preloadCodes(); // 라벨 먼저
-    await fetchList(); // 데이터
+    await preloadCodes();
+    await fetchList();
   } catch (e) {
     console.error('[init] error:', e);
-    alert('초기 로딩 실패');
+    $toast.error('초기 로딩 실패', { position: 'top-right', duration: 1000 });
   }
 });
 
-/* ─ 모달: 공정 목록 ─ */
+/* ─ 모달 ─ */
 const modalRef = ref(null);
 const modalTitle = ref('');
 const modalRowData = ref([]);
@@ -181,7 +185,7 @@ const openModal = async (title) => {
     modalRef.value?.open();
   } catch (e) {
     console.error('[process list] error:', e);
-    alert('공정 목록 조회 실패');
+    $toast.error('공정 목록 조회 실패', { position: 'top-right', duration: 1000 });
   }
 };
 const modalConfirm = (selectedRow) => {

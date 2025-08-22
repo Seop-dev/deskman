@@ -67,6 +67,9 @@ import axios from 'axios';
 import BaseBreadcrumb from '@/components/shared/BaseBreadcrumb.vue';
 import UiParentCard from '@/components/shared/UiParentCard.vue';
 import { useAuthStore } from '@/stores/auth';
+import { useToast } from 'vue-toast-notification';
+import 'vue-toast-notification/dist/theme-bootstrap.css';
+const $toast = useToast();
 
 // 로그인 세션 정보
 const authStore = useAuthStore();
@@ -146,18 +149,30 @@ onMounted(async () => {
     });
   } catch (e) {
     console.error(e);
-    alert('초기 로딩 실패: ' + (e?.response?.data?.error || e?.message));
+    $toast.error('초기 로딩 실패: ' + (e?.response?.data?.error || e?.message), {
+      position: 'top-right',
+      duration: 1000
+    });
   }
 });
 
 // 등록 처리 (FAC_TYPE 기준 PR_ID 동시 저장)
 const sign = async () => {
-  if (!canSubmit.value) return alert('(설비명/설비유형)을 확인하세요.');
+  if (!canSubmit.value) {
+    $toast.error('(설비명/설비유형)을 확인하세요.', {
+      position: 'top-right',
+      duration: 1000
+    });
+    return;
+  }
 
   // ★ 핵심: FAC_TYPE → PR_ID 매핑
   const prId = facTypeToPrId(form.type);
   if (!prId) {
-    alert('공정(PR_ID) 매핑 실패: 설비유형을 다시 선택하세요.');
+    $toast.error('공정(PR_ID) 매핑 실패: 설비유형을 다시 선택하세요.', {
+      position: 'top-right',
+      duration: 1000
+    });
     return;
   }
 
@@ -182,14 +197,20 @@ const sign = async () => {
     if (!newId) throw new Error(res?.data?.error || '등록 실패');
     form.code = newId;
 
-    alert('설비 등록 완료!');
+    $toast.success('설비 등록 완료!', {
+      position: 'top-right',
+      duration: 1000
+    });
 
     // 2) 목록 화면으로 이동 (proc에 같은 PR_ID로 필터)
     const LIST_ROUTE = '/utils/List';
     router.push({ path: LIST_ROUTE, query: { proc: prId } });
   } catch (err) {
     console.error(err);
-    alert(err?.response?.data?.error || err?.message || '등록 실패');
+    $toast.error(err?.response?.data?.error || err?.message || '등록 실패', {
+      position: 'top-right',
+      duration: 1000
+    });
   } finally {
     loading.value = false;
   }
