@@ -13,7 +13,14 @@
             ></i>
           </template>
         </v-text-field>
-        <MoDal ref="modalRef" :title="modalTitle" :rowData="modalRowData" :colDefs="modalColDefs" @confirm="onModalConfirm" />
+        <MoDal
+          ref="modalRef"
+          :key="modalKey"
+          :title="modalTitle"
+          :rowData="materialRowData"
+          :colDefs="materialColDefs"
+          @confirm="onModalConfirm"
+        />
       </v-col>
       <v-col cols="6">
         <v-text-field label="거래처" v-model="form.customer" outlined />
@@ -32,7 +39,14 @@
       </v-col>
       <v-row justify="end">
         <v-btn color="warning" class="mr-3" @click="openModal1('입고 제품 조회', materialRowData1, materialColDefs1)">입고 조회</v-btn>
-        <MoDal ref="modalRef1" :title="modalTitle1" :rowData="modalRowData1" :colDefs="modalColDefs1" @confirm="modalConfirm" />
+        <MoDal
+          ref="modalRef1"
+          :key="modalKey1"
+          :title="modalTitle1"
+          :rowData="materialRowData1"
+          :colDefs="materialColDefs1"
+          @confirm="modalConfirm"
+        />
       </v-row>
     </v-row>
 
@@ -56,7 +70,7 @@
 </template>
 
 <script setup>
-import { ref, shallowRef, reactive, onMounted } from 'vue';
+import { ref, shallowRef, reactive, onMounted, nextTick } from 'vue';
 import BaseBreadcrumb from '@/components/shared/BaseBreadcrumb.vue';
 import UiParentCard from '@/components/shared/UiParentCard.vue';
 import { AgGridVue } from 'ag-grid-vue3';
@@ -70,6 +84,8 @@ onMounted(() => {
   modalList();
   fetchCommonCodes();
 });
+const modalKey = ref(0);
+const modalKey1 = ref(0);
 
 // 공통코드 데이터를 가져오는 함수
 const fetchCommonCodes = async () => {
@@ -142,8 +158,6 @@ const openModal = async (title, rowData, colDefs) => {
 // 입고 제품 모달
 const modalRef1 = ref(null);
 const modalTitle1 = ref('');
-const modalRowData1 = ref([]);
-const modalColDefs1 = ref([]);
 
 const materialRowData1 = ref([]);
 const materialColDefs1 = [
@@ -157,7 +171,7 @@ const materialColDefs1 = [
 
 // 입고 제품 조회
 
-const openModal1 = async (title, rowData, colDefs) => {
+const openModal1 = async (title) => {
   if (!form.order) {
     alert('주문서를 선택해주세요');
     return;
@@ -176,12 +190,11 @@ const openModal1 = async (title, rowData, colDefs) => {
   console.log(res);
 
   modalTitle1.value = title;
-  modalRowData1.value = rowData;
-  modalColDefs1.value = colDefs;
-  if (modalRef1.value) {
-    modalRef1.value.open();
-  }
+  modalKey1.value++; // 강제 리마운트
+  await nextTick(); // 데이터 반영 완료 후
+  modalRef1.value?.open();
 };
+
 function onModalConfirm(selectedRow) {
   if (!selectedRow) return;
 
