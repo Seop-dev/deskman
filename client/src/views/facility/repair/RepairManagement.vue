@@ -63,6 +63,11 @@ import UiParentCard from '@/components/shared/UiParentCard.vue';
 import MoDal from '@/views/common/NewModal.vue';
 import { AgGridVue } from 'ag-grid-vue3';
 import { AllCommunityModule, ModuleRegistry, themeQuartz } from 'ag-grid-community';
+import { useToast } from 'vue-toast-notification';
+import 'vue-toast-notification/dist/theme-bootstrap.css';
+
+// toast
+const $toast = useToast();
 
 // ag-grid 등록
 ModuleRegistry.registerModules([AllCommunityModule]);
@@ -72,7 +77,7 @@ const quartz = themeQuartz;
 const apiBase = import.meta?.env?.VITE_API_BASE || '/api';
 const PROCESS_API = `${apiBase}/process`;
 
-// 코드 라벨맵 (FC = 설비유형, RR = 고장유형)
+// 코드 라벨맵
 let fcMap = new Map();
 let rrMap = new Map();
 const preloadCodeMaps = async () => {
@@ -120,7 +125,7 @@ const defaultColDef = { editable: false, sortable: true, resizable: true };
 const fetchFacilities = async () => (await axios.get(`${apiBase}/facility`)).data || [];
 const fetchStatusList = async () => (await axios.get(`${apiBase}/facility/status`)).data || [];
 
-// 그리드용 데이터 생성
+// 데이터 생성
 const rows = ref([]);
 const fmtDT = (v) => (v ? dayjs(v).format('YYYY-MM-DD HH:mm:ss') : '-');
 const composeRows = (statusRows, facilities) => {
@@ -157,6 +162,7 @@ const init = async () => {
   } catch (e) {
     console.error(e);
     rows.value = [];
+    $toast.error('초기 로딩 실패', { position: 'top-right', duration: 1000 });
   }
 };
 
@@ -201,29 +207,40 @@ watch(
 
 // 수리 완료 처리
 const completeRepair = async () => {
-  if (!form._fsId) return alert('선택된 비가동 건이 없습니다.');
-  if (!form.note?.trim()) return alert('수리내역을 입력해 주세요.');
+  if (!form._fsId) {
+    $toast.error('선택된 비가동 건이 없습니다.', { position: 'top-right', duration: 1000 });
+    return;
+  }
+  if (!form.note?.trim()) {
+    $toast.error('수리내역을 입력해 주세요.', { position: 'top-right', duration: 1000 });
+    return;
+  }
 
   const endAt = form.repairEnd || now();
   form.repairEnd = endAt;
 
-  await axios.patch(`${apiBase}/facility/status/end`, {
-    FS_ID: form._fsId,
-    endTime: endAt,
-    restoreStatus: 0,
-    checkTime: endAt,
-    repairContent: form.note,
-    repairNote: form.remark || null,
-    MANAGER: (form.manager || '').trim() || null
-  });
+  try {
+    await axios.patch(`${apiBase}/facility/status/end`, {
+      FS_ID: form._fsId,
+      endTime: endAt,
+      restoreStatus: 0,
+      checkTime: endAt,
+      repairContent: form.note,
+      repairNote: form.remark || null,
+      MANAGER: (form.manager || '').trim() || null
+    });
 
-  form._fsId = null;
-  await init();
-  form.code = '';
-  alert('수리 완료 처리되었습니다.');
+    form._fsId = null;
+    await init();
+    form.code = '';
+    $toast.success('수리 완료 처리되었습니다.', { position: 'top-right', duration: 1000 });
+  } catch (e) {
+    console.error(e);
+    $toast.error('수리 완료 처리 실패', { position: 'top-right', duration: 1000 });
+  }
 };
 
-// 유틸: 현재 시각
+// 유틸
 function now() {
   const d = new Date();
   const p = (n) => String(n).padStart(2, '0');
@@ -264,7 +281,7 @@ const openModal = async (title) => {
     modalRef.value?.open();
   } catch (e) {
     console.error('[process list] error:', e);
-    alert('공정 목록 조회 실패');
+    $toast.error('공정 목록 조회 실패', { position: 'top-right', duration: 1000 });
   }
 };
 

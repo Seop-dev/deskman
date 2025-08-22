@@ -44,6 +44,12 @@ const quartz = themeQuartz;
 
 // API
 import axios from 'axios';
+
+// toast
+import { useToast } from 'vue-toast-notification';
+import 'vue-toast-notification/dist/theme-bootstrap.css';
+const $toast = useToast();
+
 const apiBase = 'http://localhost:3000';
 
 const columnDefs = ref([
@@ -106,12 +112,13 @@ const loadInspections = async () => {
   } catch (e) {
     console.error('점검 이력 조회 실패:', e);
     rawItems.value = [];
+    $toast.error('점검 이력 조회 실패', { position: 'top-right', duration: 1000 });
   }
 };
 
 onMounted(loadInspections);
 
-// 코드/이름에 대해 간단 검색
+// 검색 필터
 const filteredItems = computed(() => {
   const kw = (productKeyword.value || '').trim().toLowerCase();
   if (!kw) return rawItems.value;

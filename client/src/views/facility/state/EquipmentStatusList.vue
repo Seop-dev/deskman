@@ -42,6 +42,10 @@ import axios from 'axios';
 import dayjs from 'dayjs';
 import MoDal from '@/views/common/NewModal.vue';
 
+import { useToast } from 'vue-toast-notification';
+import 'vue-toast-notification/dist/theme-bootstrap.css';
+const $toast = useToast();
+
 ModuleRegistry.registerModules([AllCommunityModule]);
 const quartz = themeQuartz;
 
@@ -105,7 +109,9 @@ const fetchStatusList = async () => {
   try {
     const { data } = await axios.get(`${apiBase}/facility/status`);
     return data || [];
-  } catch {
+  } catch (e) {
+    console.error(e);
+    $toast.error('설비 상태 조회 실패', { position: 'top-right', duration: 1000 });
     return [];
   }
 };
@@ -145,10 +151,16 @@ const mergeFacilitiesWithStatus = (facilities, statusRows) => {
 };
 
 const init = async () => {
-  await fetchFacTypeCodes();
-  const [facilities, statusRows] = await Promise.all([fetchFacilities(), fetchStatusList()]);
-  rows.value = mergeFacilitiesWithStatus(facilities, statusRows);
-  if (processCode.value) applyProcessFilter(processCode.value);
+  try {
+    await fetchFacTypeCodes();
+    const [facilities, statusRows] = await Promise.all([fetchFacilities(), fetchStatusList()]);
+    rows.value = mergeFacilitiesWithStatus(facilities, statusRows);
+    if (processCode.value) applyProcessFilter(processCode.value);
+  } catch (e) {
+    console.error(e);
+    rows.value = [];
+    $toast.error('초기 로딩 실패', { position: 'top-right', duration: 1000 });
+  }
 };
 
 //공정 모달
@@ -184,7 +196,7 @@ const openModal = async (title) => {
     modalRef.value?.open();
   } catch (e) {
     console.error('[process list] error:', e);
-    alert('공정 목록 조회 실패');
+    $toast.error('공정 목록 조회 실패', { position: 'top-right', duration: 1000 });
   }
 };
 const modalConfirm = (selectedRow) => {
