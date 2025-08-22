@@ -1,6 +1,6 @@
 // server/services/marketingService.js
 const mariadb = require("../database/mapper.js");
-
+const sql = require("../database/sqls/marketing.js");
 // 거래처 등록
 const addAccount = async (data) => {
   const params = [
@@ -138,17 +138,17 @@ const shipModalSelect = async () => {
   let list = await mariadb.query("shipModalSelect");
   return list;
 };
+
 // 거래처 삭제
-async function deleteAccount(ids) {
+const deleteAccount = async (ids) => {
   try {
-    if (!Array.isArray(ids)) ids = [ids]; // 단일도 처리
-    const result = await mariadb.query("deleteAccount", ids);
+    const result = await mariadb.query("deleteAccount", [ids]);
     return result;
-  } catch (e) {
-    console.error(e);
-    return { error: e };
+  } catch (err) {
+    console.error(err);
+    return result;
   }
-}
+};
 
 // 출하지시서 등록 모달(입고)
 const shipPrdSelect = async (data) => {
