@@ -75,10 +75,14 @@ import axios from 'axios';
 import BaseBreadcrumb from '@/components/shared/BaseBreadcrumb.vue';
 import UiParentCard from '@/components/shared/UiParentCard.vue';
 import MoDal from '@/views/common/NewModal.vue';
-
-// ag-grid
 import { AgGridVue } from 'ag-grid-vue3';
 import { AllCommunityModule, ModuleRegistry, themeQuartz } from 'ag-grid-community';
+
+// toast
+import { useToast } from 'vue-toast-notification';
+import 'vue-toast-notification/dist/theme-bootstrap.css';
+const $toast = useToast();
+
 ModuleRegistry.registerModules([AllCommunityModule]);
 const quartz = themeQuartz;
 
@@ -92,13 +96,11 @@ const rrOptions = ref([]);
 // 코드 테이블
 const preloadCodeMaps = async () => {
   const [fcRes, rrRes] = await Promise.all([axios.get(`${apiBase}/common/codes/FC`), axios.get(`${apiBase}/common/codes/RR`)]);
-
   const toMap = (rows) => {
     const m = new Map();
     for (const r of rows || []) m.set(String(r.code ?? r.CODE), r.code_name ?? r.CODE_NAME);
     return m;
   };
-
   fcMap = toMap(fcRes.data);
   rrMap = toMap(rrRes.data);
   rrOptions.value = Array.isArray(rrRes.data) ? rrRes.data : [];
@@ -135,23 +137,10 @@ const columnDefs = ref([
 
 const rows = ref([]);
 
-// 설비 목록 조회
-const fetchFacilities = async () => {
-  const { data } = await axios.get(`${apiBase}/facility`);
-  return data || [];
-};
+const fetchFacilities = async () => (await axios.get(`${apiBase}/facility`)).data || [];
+const fetchStatusList = async () => (await axios.get(`${apiBase}/facility/status`)).data || [];
 
-// 설비 상태 조회
-const fetchStatusList = async () => {
-  try {
-    const { data } = await axios.get(`${apiBase}/facility/status`);
-    return data || [];
-  } catch {
-    return [];
-  }
-};
-
-// 유틸
+// utils
 const fmtDT = (v) => {
   if (!v) return '';
   const d = new Date(v);
@@ -162,7 +151,6 @@ const statusText = (s) => ({ 0: '가동', 1: '비가동', 2: '점검중' })[Numb
 
 const composeRows = (statusRows, facilities) => {
   const facMap = new Map(facilities.map((f) => [f.FAC_ID, f]));
-
   return (statusRows || []).map((s) => {
     const f = facMap.get(s.FAC_ID) || {};
     const stNum = Number(s.FS_STATUS ?? 0);
@@ -183,7 +171,6 @@ const composeRows = (statusRows, facilities) => {
       비가동사유: showReason,
       고장유형: rrName,
       비가동시작시간: startAt,
-
       _fsId: s.FS_ID || null,
       _fsStatus: stNum,
       _downEnd: s.DOWN_ENDDAY || null,
@@ -226,7 +213,6 @@ const detail = reactive({
   downStart: '',
   downEnd: '',
   manager: '-',
-
   _fsId: null,
   _downEnd: null,
   _fsStatus: 0,
@@ -242,12 +228,10 @@ const onPick = (e) => {
   detail.name = d.설비명;
   detail.type = d.설비유형;
   detail.targetStatus = isUp ? '비가동' : '가동';
-
   detail.downReason = isUp ? '' : d.비가동사유 !== '-' ? d.비가동사유 : '';
   detail.errType = isUp ? '' : e.data._fsType || '';
   detail.downStart = isUp ? '' : d.비가동시작시간 !== '-' ? d.비가동시작시간 : '';
   detail.downEnd = '';
-
   detail._fsId = e.data._fsId || null;
   detail._fsStatus = e.data._fsStatus || 0;
 };
@@ -257,9 +241,14 @@ const setDown = async () => {
   if (detail.targetStatus !== '비가동') return;
   if (!detail.code) return;
 
-  if (!detail.downReason) return alert('비가동 사유를 선택하세요.');
-  if (detail.downReason === '고장' && !detail.errType) return alert('고장 유형을 선택하세요.');
-  if (!confirm('비가동으로 변경할까요?')) return;
+  if (!detail.downReason) {
+    $toast.error('비가동 사유를 선택하세요.', { position: 'top-right', duration: 1000 });
+    return;
+  }
+  if (detail.downReason === '고장' && !detail.errType) {
+    $toast.error('고장 유형을 선택하세요.', { position: 'top-right', duration: 1000 });
+    return;
+  }
 
   const nowStr = now();
 
@@ -287,18 +276,17 @@ const setDown = async () => {
         MANAGER: detail.manager || '-'
       });
     }
-
     detail.downStart = nowStr;
     detail.downEnd = '';
     await init();
-    alert('비가동 처리되었습니다.');
+    $toast.success('비가동 처리되었습니다.', { position: 'top-right', duration: 1000 });
   } catch (e) {
     console.error(e);
-    alert('비가동 처리 중 오류가 발생했습니다.');
+    $toast.error('비가동 처리 중 오류가 발생했습니다.', { position: 'top-right', duration: 1000 });
   }
 };
 
-// ===== 상태 변경 → 가동 =====
+// 상태 변경 → 가동
 const setUp = async () => {
   if (detail.targetStatus !== '가동') return;
   if (!detail.code) return;
@@ -317,14 +305,13 @@ const setUp = async () => {
     }
     detail.downEnd = endStr;
     await init();
-
     detail.downReason = '';
     detail.errType = '';
     detail.downStart = '';
-    alert('가동으로 전환되었습니다.');
+    $toast.success('가동으로 전환되었습니다.', { position: 'top-right', duration: 1000 });
   } catch (e) {
     console.error(e);
-    alert('가동 처리 중 오류가 발생했습니다.');
+    $toast.error('가동 처리 중 오류가 발생했습니다.', { position: 'top-right', duration: 1000 });
   }
 };
 
@@ -357,10 +344,7 @@ const mapProcess = (r) => ({
   비고: r.PRC_NOTE ?? ''
 });
 
-const fetchProcessList = async () => {
-  const { data } = await axios.get(PROCESS_API);
-  return (Array.isArray(data) ? data : []).map(mapProcess);
-};
+const fetchProcessList = async () => (await axios.get(PROCESS_API)).data.map(mapProcess);
 const openModal = async (title) => {
   try {
     modalTitle.value = title;
@@ -368,7 +352,7 @@ const openModal = async (title) => {
     modalRef.value?.open();
   } catch (e) {
     console.error('[process list] error:', e);
-    alert('공정 목록 조회 실패');
+    $toast.error('공정 목록 조회 실패', { position: 'top-right', duration: 1000 });
   }
 };
 const modalConfirm = (selectedRow) => {

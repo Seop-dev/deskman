@@ -86,6 +86,11 @@ import UiParentCard from '@/components/shared/UiParentCard.vue';
 import MoDal from '@/views/common/NewModal.vue';
 import { AgGridVue } from 'ag-grid-vue3';
 import { AllCommunityModule, ModuleRegistry, themeQuartz } from 'ag-grid-community';
+import { useToast } from 'vue-toast-notification';
+import 'vue-toast-notification/dist/theme-bootstrap.css';
+
+const $toast = useToast();
+
 ModuleRegistry.registerModules([AllCommunityModule]);
 const quartz = themeQuartz;
 
@@ -184,12 +189,12 @@ const form = reactive({
   checkDay: null
 });
 
-/* 행 선택 -> 폼 채우기 (type은 코드로 세팅) */
+/* 행 선택 -> 폼 채우기 */
 const onPick = (e) => {
   const d = e.data;
   form.code = d.설비코드;
   form.name = d.설비명;
-  form.type = d.FAC_TYPE || ''; // 코드
+  form.type = d.FAC_TYPE || '';
   form.useYn = d.사용유무 || '';
   form.manufacturer = d.제조사 || '';
   form.registeredAt = d.설비등록일 || '';
@@ -201,16 +206,19 @@ const onPick = (e) => {
   processCode.value = form.prId || '';
 };
 
-/* 저장 (코드값으로 전송) */
+/* 저장 */
 const saveEdit = async () => {
-  if (!form.code) return alert('수정할 설비를 선택하세요.');
+  if (!form.code) {
+    $toast.error('수정할 설비를 선택하세요.', { position: 'top-right', duration: 1000 });
+    return;
+  }
   const registered = form.registeredAt ? String(form.registeredAt).slice(0, 10) : null;
   const installed = form.installedAt ? String(form.installedAt).slice(0, 10) : null;
 
   const payload = {
     FAC_ID: form.code,
     FAC_NAME: form.name || null,
-    FAC_TYPE: form.type || null, // 코드
+    FAC_TYPE: form.type || null,
     FAC_USE: form.useYn === '사용' ? 1 : 0,
     FAC_COMPANY: form.manufacturer || null,
     FAC_MDATE: registered,
@@ -224,19 +232,19 @@ const saveEdit = async () => {
   try {
     const res = await axios.put(UPDATE_URL, payload, { headers: { 'Content-Type': 'application/json' } });
     if (res.status === 200) {
-      alert('수정 되었습니다');
+      $toast.success('수정 되었습니다', { position: 'top-right', duration: 1000 });
       await fetchList();
       gridApi.value?.refreshCells({ force: true });
     } else {
-      alert('수정 실패');
+      $toast.error('수정 실패', { position: 'top-right', duration: 1000 });
     }
   } catch (e) {
     console.error('[facility update] error:', e);
-    alert(e?.response?.data?.error || e.message || '수정 저장 실패');
+    $toast.error(e?.response?.data?.error || e.message || '수정 저장 실패', { position: 'top-right', duration: 1000 });
   }
 };
 
-/* 모달(공정) */
+/* 모달 */
 const modalRef = ref(null);
 const modalTitle = ref('');
 const modalRowData = ref([]);
@@ -267,7 +275,7 @@ const openModal = async (title) => {
     modalRef.value?.open();
   } catch (e) {
     console.error('[process list] error:', e);
-    alert('공정 목록 조회 실패');
+    $toast.error('공정 목록 조회 실패', { position: 'top-right', duration: 1000 });
   }
 };
 const modalConfirm = (selectedRow) => {
@@ -276,14 +284,14 @@ const modalConfirm = (selectedRow) => {
   applyProcessFilter(selectedRow.공정코드);
 };
 
-/* 초기 로딩: FC 코드 → 목록 */
+/* 초기 로딩 */
 onMounted(async () => {
   try {
     await preloadFC();
     await fetchList();
   } catch (e) {
     console.error('[init] error:', e);
-    alert('초기 로딩 실패');
+    $toast.error('초기 로딩 실패', { position: 'top-right', duration: 1000 });
   }
 });
 

@@ -73,6 +73,11 @@ import UiParentCard from '@/components/shared/UiParentCard.vue';
 import MoDal from '@/views/common/NewModal.vue';
 import { AgGridVue } from 'ag-grid-vue3';
 import { AllCommunityModule, ModuleRegistry, themeQuartz } from 'ag-grid-community';
+import { useToast } from 'vue-toast-notification';
+import 'vue-toast-notification/dist/theme-bootstrap.css';
+
+// toast
+const $toast = useToast();
 
 // ag-grid 등록
 ModuleRegistry.registerModules([AllCommunityModule]);
@@ -172,6 +177,7 @@ const init = async () => {
   } catch (e) {
     console.error(e);
     rows.value = [];
+    $toast.error('초기 로딩 실패', { position: 'top-right', duration: 1000 });
   }
 };
 
@@ -207,9 +213,18 @@ const onPick = (e) => {
 
 // 점검완료 처리
 const completeInspection = async () => {
-  if (!form._fsId) return alert('설비를 먼저 선택하세요.');
-  if (!form.fit) return alert('적합 여부를 선택하세요.');
-  if (form.fit === '부적합' && !form.ngReason.trim()) return alert('부적합 사유를 입력하세요.');
+  if (!form._fsId) {
+    $toast.error('설비를 먼저 선택하세요.', { position: 'top-right', duration: 1000 });
+    return;
+  }
+  if (!form.fit) {
+    $toast.error('적합 여부를 선택하세요.', { position: 'top-right', duration: 1000 });
+    return;
+  }
+  if (form.fit === '부적합' && !form.ngReason.trim()) {
+    $toast.error('부적합 사유를 입력하세요.', { position: 'top-right', duration: 1000 });
+    return;
+  }
 
   form.doneAt = now();
 
@@ -227,7 +242,7 @@ const completeInspection = async () => {
 
     await init();
     gridApi.value?.refreshCells({ force: true });
-    alert('점검이 완료되었습니다.');
+    $toast.success('점검이 완료되었습니다.', { position: 'top-right', duration: 1000 });
 
     // 폼 초기화
     Object.assign(form, {
@@ -245,7 +260,7 @@ const completeInspection = async () => {
     });
   } catch (e) {
     console.error('[inspection complete] error:', e);
-    alert('점검 완료 처리 중 오류가 발생했습니다.');
+    $toast.error('점검 완료 처리 중 오류가 발생했습니다.', { position: 'top-right', duration: 1000 });
   }
 };
 
@@ -291,7 +306,7 @@ const openModal = async (title) => {
     modalRef.value?.open();
   } catch (e) {
     console.error('[process list] error:', e);
-    alert('공정 목록 조회 실패');
+    $toast.error('공정 목록 조회 실패', { position: 'top-right', duration: 1000 });
   }
 };
 

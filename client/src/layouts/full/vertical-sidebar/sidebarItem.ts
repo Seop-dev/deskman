@@ -248,6 +248,7 @@ const sidebarItem: menu[] = [
           },
           {
             title: '설비 등록',
+            auth: ['관리자', '부서담당자'],
             to: '/utils/Registration'
           },
           {
