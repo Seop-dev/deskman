@@ -372,7 +372,7 @@ const wrSelect = `SELECT WR_AREANO,
                  WHERE WR_NO = ?`;
 
 const wrShip = `SELECT SHIP_NO, 
-                         WR_NO,
+                         WR_NAME,
                           D_DAY, 
                           PRD_LOT, 
                           PRD_NAME, 
@@ -392,6 +392,11 @@ const wrShipUpdate = `UPDATE SHIPMENT
                       DELIVERY = ?,
                       CAR_NO = ?
                       WHERE SHIP_NO = ? `;
+
+// 출하 지시서 운송사 조회
+const wrDelivery = `SELECT CUS_TYPE, CUS_NAME, CUS_MANAGER
+FROM CUSTOMERS
+WHERE CUS_TYPE = '운송업체'`;
 
 module.exports = {
   masterEmpSelect,
@@ -447,4 +452,5 @@ module.exports = {
   masterPrcUpdate,
   wrShip,
   wrShipUpdate,
+  wrDelivery,
 };

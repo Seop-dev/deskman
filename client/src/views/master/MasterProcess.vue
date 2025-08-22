@@ -75,6 +75,18 @@ import { AgGridVue } from 'ag-grid-vue3';
 import UiParentCard from '@/components/shared/UiParentCard.vue';
 import axios from 'axios';
 import MoDal from '../common/NewModal.vue';
+
+// 토스트
+import { useToast } from 'vue-toast-notification';
+import 'vue-toast-notification/dist/theme-bootstrap.css';
+const $toast = useToast();
+
+// 로그인 세션 정보
+import { useAuthStore } from '@/stores/auth';
+const authStore = useAuthStore();
+
+//{ position: 'top-right', duration: 1000 }
+
 const quartz = themeQuartz;
 const rowSelection = ref({
   mode: 'multiRow'
@@ -83,7 +95,7 @@ const today = new Date().toISOString().split('T')[0];
 const form = ref({
   prcCode: '', //
   prcName: '',
-  writer: '',
+  writer: authStore.user?.name || '',
   date: today,
   type: '',
   note: ''
@@ -135,48 +147,64 @@ onMounted(() => {
 });
 // 저장버튼
 const submitForm = async () => {
-  console.log(!form.value.prcCode);
-  // 수정
-  if (form.value.prcCode) {
-    const updateRow = {
-      PRC_NAME: form.value.prcName,
-      PRC_TYPE: form.value.type,
-      PRC_WRITER: form.value.writer,
-      PRC_DATE: form.value.date,
-      PRC_NOTE: form.value.note,
-      PRC_CODE: form.value.prcCode
-    };
-    const result = await axios.post('http://localhost:3000/masterPrcUpdate', updateRow);
-    console.log(result.config.data);
-    await prcList();
-  } else {
-    // db저장
-    if (!form.value.type) {
-      alert('값을 올바르게 기재하십시오.');
+  try {
+    // 중복 체크 (클라이언트)
+    const exists = rowData1.value.some((item) => item.공정명 === form.value.prcName);
+
+    // 신규 등록 시 중복이면 막기
+    if (!form.value.prcCode && exists) {
+      $toast.warning('이미 등록된 공정명입니다.', { position: 'top-right' });
       return;
     }
-    const newRow = {
-      PRC_NAME: form.value.prcName,
-      PRC_TYPE: form.value.type,
-      PRC_WRITER: form.value.writer,
-      PRC_DATE: form.value.date,
-      PRC_NOTE: form.value.note
-    };
-    const result = await axios.post('http://localhost:3000/masterPrcInsert', newRow);
-    console.log(result.config.data);
-    await prcList();
+
+    // 필수 입력 체크
+    if (!form.value.type || !form.value.prcName) {
+      $toast.warning('공정명과 설비유형을 입력해주세요.', { position: 'top-right' });
+      return;
+    }
+
+    if (form.value.prcCode) {
+      // 수정
+      const updateRow = {
+        PRC_NAME: form.value.prcName,
+        PRC_TYPE: form.value.type,
+        PRC_WRITER: form.value.writer,
+        PRC_DATE: form.value.date,
+        PRC_NOTE: form.value.note,
+        PRC_CODE: form.value.prcCode
+      };
+      await axios.post('http://localhost:3000/masterPrcUpdate', updateRow);
+      $toast.success('공정이 수정되었습니다.', { position: 'top-right' });
+      await prcList();
+    } else {
+      // 신규 등록
+      const newRow = {
+        PRC_NAME: form.value.prcName,
+        PRC_TYPE: form.value.type,
+        PRC_WRITER: form.value.writer,
+        PRC_DATE: form.value.date,
+        PRC_NOTE: form.value.note
+      };
+      await axios.post('http://localhost:3000/masterPrcInsert', newRow);
+      $toast.success('공정이 등록되었습니다.', { position: 'top-right', duration: 1000 });
+      await prcList();
+    }
+  } catch (err) {
+    console.error(err);
+    $toast.error('저장 중 오류가 발생했습니다.', { position: 'top-right', duration: 1000 });
   }
 };
 
 // 폼 데이터를 초기화하는 함수
 const resetForm = () => {
-  form.value = {
-    prcCode: '',
-    prcName: '',
-    note: '',
-    date: '',
-    type: ''
-  };
+  form.value.prcCode = '';
+  form.value.prcName = '';
+  form.value.note = '';
+  form.value.type = '';
+  form.value.writer = authStore.user?.name || '';
+  // writer와 date는 그대로 유지
+
+  $toast.info('초기화되었습니다.', { position: 'top-right', duration: 1000 });
 };
 
 // 행선택시 등록 폼으로

@@ -105,7 +105,7 @@ const form = ref({ writer: '', addDate: today, bomVer: '', bomCode: '', prdName:
 import { useToast } from 'vue-toast-notification';
 import 'vue-toast-notification/dist/theme-bootstrap.css';
 const $toast = useToast();
-
+//{ position: 'top-right', duration: 1000 }
 // 제품 리스트
 const prdData = ref([]);
 
@@ -427,6 +427,12 @@ const modalConfirm = async (selectedRow) => {
     BOM_VER: form.value.bomVer
   };
   try {
+    for (var i = 0; i < matData.value.length; i++) {
+      if (selectedRow.자재코드 == matData.value[i].자재코드) {
+        $toast.info('아미 등록된 자재입니다.', { position: 'top-right', duration: 1000 });
+        return;
+      }
+    }
     const res = await axios.post('http://localhost:3000/BOMmodalConfirm', confirmRow);
     console.log(res);
     $toast.success('자재가 성공적으로 추가되었습니다!', { position: 'top-right', duration: 1000 });
