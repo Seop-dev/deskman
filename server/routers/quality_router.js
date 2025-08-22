@@ -41,8 +41,35 @@ router.post("/passmat", async (req, res) => {
 });
 
 // 불합격원자재 등록
+router.post("/rejectmat", async (req, res) => {
+  try {
+    const body = req.body || {};
+    const {
+      RECEIPT_NO,
+      MAT_CODE,
+      RJT_REASON,
+      Q_CHECKED_DATE,
+      TOTAL_QTY,
+      CREATED_BY,
+    } = body;
+    const result = await qualityService.addRejectMat({
+      RECEIPT_NO,
+      MAT_CODE,
+      RJT_REASON,
+      Q_CHECKED_DATE, // 'YYYY-MM-DD'
+      TOTAL_QTY,
+      CREATED_BY,
+    });
+    return res.json({ ok: true, affected: result.affectedRows ?? 0 });
+  } catch (err) {
+    console.error("[/rjtmat] ERROR:", err);
+    return res
+      .status(500)
+      .json({ ok: false, message: err.message, detail: String(err) });
+  }
+});
 
-// 불합격제품 등록 (수정된 버전)
+// 불합격제품 등록
 router.post("/rejectprd", async (req, res) => {
   try {
     const b = req.body || {};
@@ -137,7 +164,7 @@ router.get("/qstdlist", async (req, res) => {
   res.send(list);
 });
 
-// 품질기준 변경 (POST)
+// 품질기준 변경
 router.post("/qstdupdate", async (req, res) => {
   try {
     const result = await qualityService.updateQstd(req.body);

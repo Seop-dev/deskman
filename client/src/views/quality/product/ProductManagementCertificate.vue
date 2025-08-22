@@ -66,15 +66,21 @@ import { ref, shallowRef, computed, onMounted } from 'vue';
 import BaseBreadcrumb from '@/components/shared/BaseBreadcrumb.vue';
 import UiParentCard from '@/components/shared/UiParentCard.vue';
 
-import { useRoute } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { AgGridVue } from 'ag-grid-vue3';
 import { ModuleRegistry, themeQuartz, ClientSideRowModelModule, RowSelectionModule, ValidationModule } from 'ag-grid-community';
+
+// 토스트
+import { useToast } from 'vue-toast-notification';
+import 'vue-toast-notification/dist/theme-bootstrap.css';
+const $toast = useToast();
 
 // 모듈 등록
 ModuleRegistry.registerModules([ClientSideRowModelModule, RowSelectionModule, ...(import.meta.env.PROD ? [] : [ValidationModule])]);
 
 const quartz = themeQuartz;
 const route = useRoute();
+const router = useRouter();
 
 /* breadcrumb */
 const page = ref({ title: '제품 검수관리 등록' });
@@ -246,7 +252,7 @@ async function saveForm() {
 
     // 불합격이면 사유 필수 검증
     if (!isPass && !defectReason.value.description.trim()) {
-      alert('불합격 사유를 입력해주세요.');
+      $toast.error('불합격 사유를 입력해주세요.', { position: 'top-right', duration: 1000 });
       return;
     }
 
@@ -283,7 +289,8 @@ async function saveForm() {
       const response = await axios.post('http://localhost:3000/passprd', payload);
 
       if (response.data.ok) {
-        alert('합격 제품이 등록되었습니다!');
+        $toast.info('합격 제품이 등록되었습니다', { position: 'top-right', duration: 1000 });
+        router.push('/qm/prdmng');
       }
     } else {
       // 불합격 처리
@@ -302,8 +309,9 @@ async function saveForm() {
       const response = await axios.post('http://localhost:3000/rejectprd', payload);
 
       if (response.data.ok) {
-        alert('불합격 제품이 등록되었습니다!');
+        $toast.info('불합격 제품이 등록되었습니다', { position: 'top-right', duration: 1000 });
         console.log('등록된 인증서 ID:', response.data.prdCertId);
+        router.push('/qm/prdmng');
       }
     }
   } catch (err) {

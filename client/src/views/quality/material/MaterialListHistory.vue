@@ -13,10 +13,10 @@
         <v-text-field label="검사완료일자" v-model="form.inspector" type="date" dense outlined />
       </v-col>
       <!-- 버튼 -->
-      <v-row justify="end">
+      <v-col justify="end">
         <v-btn color="primary" variant="elevated" @click="searchData" class="mr-2">조회</v-btn>
         <v-btn color="error" variant="elevated" @click="resetForm">초기화</v-btn>
-      </v-row>
+      </v-col>
     </v-row>
     <br />
 

@@ -53,21 +53,6 @@ const breadcrumbs = shallowRef([
   { title: '원자재검수조회', disabled: false, href: '#' }
 ]);
 
-/* 상단 단건 표시용 데이터
-   - 3번 그리드를 없앴으므로, 헤더용으로 한 건만 유지
-   - 실제로는 API 응답으로 바꿔 끼우면 됨 */
-const rowData = ref([
-  {
-    certId: '',
-    prdCode: '',
-    prdName: '',
-    chkedDate: '',
-    totalQty: 0,
-    prdType: '',
-    writer: ''
-  }
-]);
-
 const detailCols = ref([
   { headerName: '검사번호', field: 'certId', flex: 1, resizable: true, suppressSizeToFit: true, editable: false },
   { headerName: '제품코드', field: 'prdCode', flex: 1, resizable: true, suppressSizeToFit: true, editable: false },

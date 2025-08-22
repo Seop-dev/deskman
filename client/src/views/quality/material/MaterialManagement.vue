@@ -3,10 +3,10 @@
 
   <UiParentCard>
     <!-- 상단 버튼 -->
-    <v-row justify="end" class="mb-2">
+    <v-row justify="end">
       <v-col>
-        <v-btn color="error" class="top_btn_ser" variant="elevated" @click="resetForm">초기화</v-btn>
-        <v-btn color="primary" class="top_btn_ser" @click="saveForm">등록</v-btn>
+        <v-btn color="error" variant="elevated" @click="resetForm" class="mr-2">초기화</v-btn>
+        <v-btn color="primary" variant="elevated" @click="saveForm">등록</v-btn>
       </v-col>
     </v-row>
 
@@ -64,27 +64,26 @@
 </template>
 
 <script setup>
-/*
-
-기능 필요한거
-1. 뒤로가기 버튼 하나 만들어주세요
-2. 원자재검사 등록 후에 알람창 하나 만들어주세요.
-
-*/
 import axios from 'axios';
 import { ref, shallowRef, computed, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import BaseBreadcrumb from '@/components/shared/BaseBreadcrumb.vue';
 import UiParentCard from '@/components/shared/UiParentCard.vue';
 
 import { AgGridVue } from 'ag-grid-vue3';
 import { ModuleRegistry, themeQuartz, ClientSideRowModelModule, RowSelectionModule, ValidationModule } from 'ag-grid-community';
 
+// 토스트
+import { useToast } from 'vue-toast-notification';
+import 'vue-toast-notification/dist/theme-bootstrap.css';
+const $toast = useToast();
+
 // 모듈 등록
 ModuleRegistry.registerModules([ClientSideRowModelModule, RowSelectionModule, ...(import.meta.env.PROD ? [] : [ValidationModule])]);
 
 const quartz = themeQuartz;
 const route = useRoute();
+const router = useRouter();
 
 /* breadcrumb */
 const page = ref({ title: '원자재 검수관리 등록' });
@@ -280,9 +279,11 @@ async function saveForm() {
   const isPass = finalStatus.value === '합격';
 
   if (!isPass && !defectReason.value.description.trim()) {
-    alert('불합격 사유를 입력해주세요.');
+    $toast.warning('불합격 사유를 입력해주세요.', { position: 'top-right', duration: 1000 });
     return;
   }
+  // 데이터타입이 date일 경우 사용
+  const today = new Date();
 
   const passData = {
     RECEIPT_NO: d.inNo.trim(),
@@ -293,20 +294,22 @@ async function saveForm() {
   };
 
   const rjtData = {
-    RECEIPT_NO: d.inNo,
-    MAT_CODE: d.materialCode,
-    RJT_REASON: defectReason.value.description.trim().slice(0, 100),
-    Q_CHECKED_DATE: d.doneDate,
+    RECEIPT_NO: String(d.inNo),
+    MAT_CODE: String(d.materialCode),
+    RJT_REASON: String(defectReason.value.description.trim().slice(0, 100)),
+    Q_CHECKED_DATE: today.toISOString().slice(0, 10),
     TOTAL_QTY: Number(d.totalQty),
-    CREATED_BY: d.user
+    CREATED_BY: String(d.user)
   };
 
   if (isPass) {
     await axios.post('http://localhost:3000/passmat', passData);
-    alert('합격등록이 완료되었습니다.');
+    $toast.info('합격등록이 완료되었습니다.', { position: 'top-right', duration: 1000 });
+    router.push('/qm/matlst');
   } else {
-    await axios.post('http://localhost:3000/rjtmat', rjtData);
-    alert('불합격등록이 완료되었습니다.');
+    await axios.post('http://localhost:3000/rejectmat', rjtData);
+    $toast.info('불합격등록이 완료되었습니다.', { position: 'top-right', duration: 1000 });
+    router.push('/qm/matlst');
   }
 }
 </script>

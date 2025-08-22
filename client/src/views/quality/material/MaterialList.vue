@@ -21,15 +21,12 @@
           clearable
         />
       </v-col>
-      <v-col cols="3">
+      <!-- 버튼 -->
+      <v-col justify="end" class="mb-2">
         <!-- 검색 버튼 추가 -->
         <v-btn color="primary" variant="elevated" @click="searchData">검색</v-btn>
+        <v-btn color="error" @click="resetForm">초기화</v-btn>
       </v-col>
-    </v-row>
-
-    <!-- 버튼 -->
-    <v-row justify="end" class="mb-4">
-      <v-btn color="error" variant="elevated" @click="resetForm">초기화</v-btn>
     </v-row>
 
     <ag-grid-vue

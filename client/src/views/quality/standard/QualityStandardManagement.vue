@@ -59,9 +59,16 @@ import BaseBreadcrumb from '@/components/shared/BaseBreadcrumb.vue';
 import UiParentCard from '@/components/shared/UiParentCard.vue';
 import { AgGridVue } from 'ag-grid-vue3';
 import { AllCommunityModule, ModuleRegistry, themeQuartz } from 'ag-grid-community';
+import { useRouter } from 'vue-router';
+
+// 토스트
+import { useToast } from 'vue-toast-notification';
+import 'vue-toast-notification/dist/theme-bootstrap.css';
+const $toast = useToast();
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 const quartz = themeQuartz;
+const router = uerRouter();
 
 // 페이지 정보
 const page = ref({ title: '품질 기준 관리' });
@@ -75,14 +82,14 @@ const breadcrumbs = shallowRef([
  */
 const rawRows = ref([]);
 const productTypes = ref([]);
-const groupedMap = ref({}); // { '완제품': [...], '반제품': [...], ... }
+const groupedMap = ref({}); // 완제품/반제품/원목/합판
 const pendingUpdates = ref(new Map()); // 상단 반영된 변경사항을 임시로 모아두는 저장소
 const makeKey = (type, originalStdName) => `${type}|||${originalStdName}`;
 
 // 검색 조건
 const search = ref({ type: '' });
 
-// 상단 그리드 컬럼 정의
+// 상단 그리드 컬럼 정의 - 필드명을 데이터와 일치시킴
 const colDefs = ref([
   { field: '기준', flex: 0.9, headerName: '기준', editable: false },
   { field: '허용수치', flex: 1.3, headerName: '허용수치', editable: false }
@@ -100,7 +107,7 @@ const gridOptions = ref({
   deltaRowDataMode: true
 });
 
-// 하단 그리드 컬럼 정의
+// 하단 그리드 컬럼 정의 - 필드명을 데이터와 일치시킴
 const detailColDefs = ref([
   { field: '기준', flex: 0.9, headerName: '기준', editable: true },
   { field: '허용수치', flex: 1.3, headerName: '허용수치', editable: true }
@@ -170,7 +177,7 @@ const onMainCellValueChanged = () => {
 // 상단에 반영: UI 갱신 + pending에 저장
 const applyChanges = () => {
   if (!selectedRow.value || !originalSelectedRow.value) {
-    alert('선택된 항목이 없습니다.');
+    $toast.warning('선택된 항목이 없습니다.', { position: 'top-right', duration: 1000 });
     return;
   }
 
@@ -178,7 +185,7 @@ const applyChanges = () => {
   const list = groupedMap.value[type] || [];
   const idx = list.findIndex((r) => r._id === originalSelectedRow.value._id);
   if (idx === -1) {
-    alert('해당 데이터를 찾을 수 없습니다.');
+    $toast.warning('해당 데이터를 찾을 수 없습니다', { position: 'top-right', duration: 1000 });
     return;
   }
 
@@ -197,15 +204,14 @@ const applyChanges = () => {
     STD_NAME: after['기준'],
     ALLOWED_VALUE: after['허용수치']
   });
-
-  alert('상단에 반영되었습니다. (등록 버튼을 눌러 저장하세요)');
+  $toast.info('상단에 반영되었습니다. (등록 버튼을 눌러 저장하세요)', { position: 'top-right', duration: 1000 });
 };
 
-// 등록: pending 내용을 실제 DB에 반영
+// 등록: pending 내용을 실제 DB에 반영 (원래 로직으로 복원)
 const saveForm = async () => {
   const updates = Array.from(pendingUpdates.value.values());
   if (updates.length === 0) {
-    alert('저장할 변경사항이 없습니다.');
+    $toast.warning('저장할 변경사항이 없습니다', { position: 'top-right', duration: 1000 });
     return;
   }
 
@@ -214,13 +220,13 @@ const saveForm = async () => {
       await axios.post('http://localhost:3000/qstdupdate', payload);
     }
     pendingUpdates.value.clear();
-    alert('변경사항이 저장되었습니다.');
+    $toast.info('변경사항이 저장되었습니다', { position: 'top-right', duration: 1000 });
 
     // 필요 시 서버 재조회로 싱크 맞춤
     // await qcStandard();
   } catch (e) {
     console.error('저장 실패:', e);
-    alert('저장 중 오류가 발생했습니다.');
+    $toast.warning('저장 중 오류가 발생했습니다', { position: 'top-right', duration: 1000 });
   }
 };
 
@@ -259,6 +265,7 @@ const qcStandard = async () => {
       const stdName = r.STD_NAME;
       const allowed = r.ALLOWED_VALUE;
       const id = `${type}|${stdName}`;
+      console.log('rows안의 id의 값 => ' + id);
       return {
         _id: id,
         type,
