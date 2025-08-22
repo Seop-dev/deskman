@@ -161,8 +161,9 @@ const reqUpdateStatusByIdsCsv = `
 // 거래처 삭제
 const sqlList = {};
 
+// 거래처 삭제
 sqlList.deleteAccount = (ids) => {
-  const placeholders = ids.map(() => "?").join(","); 
+  const placeholders = ids.map(() => "?").join(",");
   return {
     sql: `DELETE FROM CUSTOMERS WHERE CUS_ID IN (${placeholders})`,
     params: ids

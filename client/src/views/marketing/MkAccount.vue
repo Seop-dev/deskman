@@ -78,10 +78,12 @@ const store = useProcessSimStore();
 // onDeactivated(() => stopSimTicker());
 
 // ---- ag-Grid API 저장 ----
-let gridApi = null;
+const gridApi = ref(null);
+
 function onGridReady(params) {
-  gridApi = params.api;                           // ✅ gridApi 세팅
+  gridApi.value = params.api;
 }
+
 
 // ---- 페이지 헤더 ----
 const page = ref({ title: '거래처등록 및 조회' });
@@ -177,7 +179,7 @@ const submitForm = async () => {
 const rowData2 = ref([]);
 
 const colDefs2 = ref([
-  { checkboxSelection: true, width: 50 },   // headerCheckboxSelection 제거
+  // { checkboxSelection: true, width: 50 },   
   { headerName: '거래처코드', field: 'cusId', flex: 1 },
   { headerName: '거래처유형', field: 'cusType', flex: 1 },
   { headerName: '거래처명', field: 'cusName', flex: 1 },
@@ -192,37 +194,6 @@ const colDefs2 = ref([
 
 
 
-//----------삭제도전-----------------------------------
-// function onRowClicked(e) {
-//   // 필요 시 상세/편집용 로직 추가
-//   // console.log('row clicked:', e.data);
-// }
-
-// // 삭제
-// async function deleteSelected() {
-//   if (!gridApi) return;
-//   const selected = gridApi.getSelectedRows();
-//   if (!selected.length) return alert('삭제할 행을 선택하세요.');
-//   if (!confirm(`${selected.length}건을 삭제하시겠습니까?`)) return;
-
-//   try {
-//     const ids = selected.map(r => r.id);
-//     const { data } = await axios.delete(`${API}/marketing/deleteacc/bulk`, {
-//       data: { ids }
-//     });
-//     if (data?.ok) {
-//       gridApi.applyTransactionAsync({ remove: selected });
-//       const set = new Set(ids);
-//       orders.value = orders.value.filter(r => !set.has(r.id));
-//       toast('삭제되었습니다.', 'success');
-//     } else {
-//       toast('삭제 실패', 'error');
-//     }
-//   } catch (e) {
-//     console.error(e);
-//     toast('삭제 오류', 'error');
-//   }
-// }
 //-----------------------삭제도전222222-------------
 const gridOptions = {
   rowSelection: {
@@ -237,16 +208,21 @@ function onRowClicked(event) {
   console.log('row clicked:', event.data);
 }
 const deleteSelected = async () => {
- 
-  async function deleteAccBulk(selectedRows) {
-  if (!selectedRows.length) return alert('삭제할 항목을 선택하세요.');
-  if (!confirm(`${selectedRows.length}건을 삭제하시겠습니까?`)) return;
+  if (!gridApi.value) {
+    alert('그리드가 아직 준비되지 않았습니다.');
+    return;
+  }
+
+  const selectedRows = gridApi.value.getSelectedRows();
+  if (!selectedRows.length) {
+    alert('삭제할 항목을 선택하세요.');
+    return;
+  }
 
   try {
-    const ids = selectedRows.map(r => r.id);
-    const { data } = await axios.delete('/api/marketing/deleteacc/bulk', {
-      data: { ids }
-    });
+    const ids = selectedRows.map(r => r.cusId);  // ✅ 실제 PK 필드명 확인!
+    console.log('삭제 대상:', ids);
+    const { data } = await axios.post('http://localhost:3000/deleteacc/bulk', { ids });
     if (data?.ok) {
       await loadPartners();
       alert('성공적으로 삭제되었습니다.');
@@ -257,7 +233,6 @@ const deleteSelected = async () => {
     console.error(e);
     alert('오류가 발생하였습니다.');
   }
-}
 };
 
 
