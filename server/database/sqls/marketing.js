@@ -159,16 +159,7 @@ const reqUpdateStatusByIdsCsv = `
  `;
 
 // 거래처 삭제
-const sqlList = {};
-
-// 거래처 삭제
-sqlList.deleteAccount = (ids) => {
-  const placeholders = ids.map(() => "?").join(",");
-  return {
-    sql: `DELETE FROM CUSTOMERS WHERE CUS_ID IN (${placeholders})`,
-    params: ids
-  };
-};
+const deleteAccount = `DELETE FROM CUSTOMERS WHERE CUS_ID IN (?)`;
 
 // 출하지시서 주문서 조회 모달
 const shipModalSelect = `SELECT 
@@ -230,7 +221,7 @@ module.exports = {
   reqDetailInsert,
   reqSelect,
   reqUpdateStatusByIdsCsv,
-  sqlList,
+  deleteAccount,
   shipModalSelect,
   shipPrdSelect,
   shipInsert,

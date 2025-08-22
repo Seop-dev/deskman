@@ -2,6 +2,9 @@
 const express = require("express");
 const router = express.Router();
 const marketingService = require("../services/marketingService.js");
+router.use(express.json());
+const db = require("../database/mapper.js");
+const mapper = require("../database/mapper.js");
 
 // 거래처 등록
 router.post("/marketing/insertacc", async (req, res) => {
@@ -106,8 +109,6 @@ router.get("/shipSelect", async (req, res) => {
   res.send(list);
 });
 
-module.exports = router;
-
 // 거래처 조회
 router.get("/marketing/getacclist", async (req, res) => {
   try {
@@ -120,22 +121,17 @@ router.get("/marketing/getacclist", async (req, res) => {
 });
 
 // 거래처 삭제
-router.post('/deleteacc/bulk', async (req, res) => {
+router.delete("/deleteAccount", async (req, res) => {
   try {
-    const { ids } = req.body;
-    console.log("📌 요청 ids:", ids);
-
-    const result = await mariadb.query('deleteAccount', ids);
-    console.log("📌 삭제 실행 결과:", result);
-
-    res.json({ ok: true });
-  } catch (e) {
-    console.error("❌ 삭제 에러:", e);
-    res.status(500).json({ ok: false, msg: e.message });  // 클라이언트에도 원인 전달
+    const { ids } = req.body; // { ids: ['CUS-001'] }
+    console.log("삭제 요청:", ids);
+    const result = await marketingService.deleteAccount(ids);
+    res.send(result);
+  } catch (error) {
+    console.error(error);
+    res.send({ error: error });
   }
 });
-
-
 
 // 출하지시서등록 - 주문서모달
 router.get("/shipModalSelect", async (req, res) => {
@@ -164,4 +160,5 @@ router.post("/shipInsert", async (req, res) => {
     console.log(e);
   }
 });
+
 module.exports = router;
