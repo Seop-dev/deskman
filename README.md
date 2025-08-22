@@ -17,25 +17,69 @@
 ---
 
 ## 팀원
-- 이동섭(팀장): 생산 파트  
-- 김태완(부팀장): 영업, 기준정보, 물류 파트  
-- 최은수(개발환경): 자재 파트  
-- 김성수(GIT 담당): 설비 파트  
-- 정경준(DB 담당): 품질 파트  
-- 제갈은경: 영업 파트  
+- 이동섭(팀장) : 생산 파트  
+- 김태완(부팀장) : 영업, 기준정보, 물류 파트  
+- 최은수(개발환경) : 자재 파트  
+- 김성수(Git 담당) : 설비 파트  
+- 정경준(DB 담당) : 품질 파트  
+- 제갈은경 : 영업 파트  
 
 ---
 
 ## 개발 기간
-- 전체 개발 기간 : 2025.07.24 ~ 2025.08.28  
-  - 설계 기간 : 2025.07.24 ~ 2025.08.06  
-  - 구현 기간 : 2025.08.07 ~ 2025.08.22  
+- 전체 : **2025.07.24 ~ 2025.08.28**  
+  - 설계 : 2025.07.24 ~ 2025.08.06  
+  - 구현 : 2025.08.07 ~ 2025.08.22  
   - 배포 및 테스트 : 2025.08.22 ~ 2025.08.25  
   - 발표 준비 : 2025.08.26 ~ 2025.08.27  
   - 프로젝트 발표 : 2025.08.28  
 
 ---
 
-## 커밋 메시지 형식
-- `(이름 / 작업내용 / yyyyMMdd)`  
-- 예시:  홍길동 / README.md 작성 / 20250724
+## 커밋 메시지 규칙
+- 형식 : `(이름 / 작업내용 / yyyyMMdd)`  
+- 예시 :  홍길동 / README.md 작성 / 20250724
+
+
+---
+
+## 개발 환경
+
+### Language
+- JavaScript  
+- TypeScript  
+
+### IDE
+- Visual Studio Code  
+
+### Front-End
+- Vue.js 3.5.13  
+- Vite  
+- Bootstrap  
+- Vuetify  
+- AG-Grid  
+- Pinia  
+- Axios  
+- Toast  
+
+### Back-End
+- Node.js  
+- Express  
+
+### Database
+- MariaDB  
+
+### Server
+- Naver Cloud Platform  
+
+### Communication & Tools
+- GitHub  
+- Discord  
+- Google Workspace (Chat / Docs / Slides / Sheets)  
+- ERD Cloud  
+
+### OS
+- Windows 10  
+- Windows 11  
+- Ubuntu 24.04 LTS  
+
