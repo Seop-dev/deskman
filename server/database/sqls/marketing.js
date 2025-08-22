@@ -157,7 +157,6 @@ const reqUpdateStatusByIdsCsv = `
    WHERE FIND_IN_SET(REQ_ID, ?)
  `;
 
-
 // 거래처 삭제
 const deleteAccount = `
   DELETE FROM CUSTOMERS
@@ -165,6 +164,7 @@ const deleteAccount = `
 
 `;
 
+// 출하지시서 등록버튼
 
 module.exports = {
   insertAccount,
@@ -186,5 +186,4 @@ module.exports = {
   reqSelect,
   reqUpdateStatusByIdsCsv,
   deleteAccount,
-
 };

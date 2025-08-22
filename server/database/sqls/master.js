@@ -380,6 +380,7 @@ const wrShip = `SELECT SHIP_NO,
                           DELIVERY,
                           CAR_NO, 
                           SHIP_WRITER,
+                          SHIP_ORDER_DATE,
                           SHIP_DATE,
                           SHIP_STATUS
                     FROM SHIPMENT
