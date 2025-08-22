@@ -245,6 +245,53 @@ const MainRoutes = {
     },
 
     // 설비
+    {
+      name: 'Registration',
+      path: '/utils/Registration',
+      component: () => import('@/views/facility/information/EquipmentRegistration.vue')
+    },
+    {
+      name: 'CheckManagement',
+      path: '/utils/CheckManagement',
+      component: () => import('@/views/facility/check/CheckManagement.vue')
+    },
+
+    {
+      name: 'List',
+      path: '/utils/List',
+      component: () => import('@/views/facility/information/EquipmentList.vue')
+    },
+
+    {
+      name: 'status',
+      path: '/utils/status',
+      component: () => import('@/views/facility/state/EquipmentStatusList.vue')
+    },
+    {
+      name: 'modify',
+      path: '/utils/modify',
+      component: () => import('@/views/facility/information/EquipmentModify.vue')
+    },
+    {
+      name: 'repairhistory',
+      path: '/utils/repairhistory',
+      component: () => import('@/views/facility/repair/RepairHistory.vue')
+    },
+    {
+      name: 'checkhistory',
+      path: '/utils/checkhistory',
+      component: () => import('@/views/facility/check/CheckHistory.vue')
+    },
+    {
+      name: 'RepairManagement',
+      path: '/utils/RepairManagement',
+      component: () => import('@/views/facility/repair/RepairManagement.vue')
+    },
+    {
+      name: 'StatusOperational',
+      path: '/utils/StatusOperational',
+      component: () => import('@/views/facility/state/StatusOperational.vue')
+    },
     // 품질
     {
       // 원자재조회

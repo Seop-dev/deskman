@@ -54,3 +54,7 @@ app.use(marketingRouter);
 // f로그인
 const loginRouter = require("./routers/login_router.js");
 app.use("/", loginRouter);
+
+//설비
+const FacilityRouter = require("./routers/facility_router.js");
+app.use(FacilityRouter);
