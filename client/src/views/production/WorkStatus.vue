@@ -40,7 +40,7 @@
         :items="visibleRows"
         density="compact"
         item-key="key"
-        :items-per-page="12"
+        :items-per-page="10"
         :group-by="groupByIssue ? [{ key: 'issueNumber', order: 'asc' }] : []"
         class="no-hover"
       >

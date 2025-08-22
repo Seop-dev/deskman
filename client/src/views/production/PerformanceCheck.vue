@@ -30,14 +30,6 @@
             clearable
           />
         </v-col>
-
-        <v-col cols="12" md="4">
-          <v-text-field label="시작일시" v-model="q.startAt" type="datetime-local" dense outlined />
-        </v-col>
-
-        <v-col cols="12" md="4">
-          <v-text-field label="종료일시" v-model="q.endAt" type="datetime-local" dense outlined />
-        </v-col>
       </v-row>
 
       <div class="search-actions">
