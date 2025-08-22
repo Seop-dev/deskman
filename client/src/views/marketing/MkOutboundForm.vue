@@ -42,7 +42,7 @@
       :theme="quartz"
       style="height: 200px; width: 100%"
       @cell-value-changed="onCellValueChanged"
-      @grid-ready="onGridReady"
+      @grid-ready="onGridReadyMat"
     >
     </ag-grid-vue>
 
@@ -68,6 +68,7 @@ const wrOptions = ref([]);
 onMounted(() => {
   modalList();
   fetchCommonCodes();
+  reqCusModal();
 });
 // 공통코드 데이터를 가져오는 함수
 const fetchCommonCodes = async () => {
@@ -93,13 +94,41 @@ const colDefs = ref([
 ]);
 
 // ----------------- 폼 입력 필드 (유지) -----------------
-const form = reactive({ order: '', customer: '', dueDate: '', shipDate: '', writer: '', wrName: '' });
+const form = reactive({ order: '', customer: '', dueDate: '', shipDate: '', writer: '', wrName: '', cusId: '' });
 
 // ----------------- 모달 (기본 정의) -----------------
 const modalRef = ref(null);
 const modalTitle = ref('');
 const modalRowData = ref([]);
 const modalColDefs = ref([]);
+
+//모달 value들
+
+const materialColDefs = [
+  { field: '거래처코드', headerName: '거래처코드', flex: 1 },
+  { field: '거래처명', headerName: '거래처명', flex: 1 },
+  { field: '거래담당자', headerName: '거래담당자', flex: 1 }
+];
+const materialRowData = ref([]);
+
+// 모달 조회
+const modalList = async () => {
+  const res = await axios.get('http://localhost:3000/commonDept');
+  materialRowData.value = res.data.map((prd) => ({
+    그룹코드: prd.group_code,
+    부서명: prd.code_name
+  }));
+  console.log(res);
+};
+
+const openModal = async (title, rowData, colDefs) => {
+  modalTitle.value = title;
+  modalRowData.value = rowData;
+  modalColDefs.value = colDefs;
+  if (modalRef.value) {
+    modalRef.value.open();
+  }
+};
 
 // 모달 입고 제품들
 const modalRef1 = ref(null);
@@ -117,15 +146,12 @@ const materialColDefs1 = [
   { field: '입고일자', headerName: '입고일자', flex: 1 }
 ];
 
-const modalList = async () => {
-  const res = await axios.get('http://localhost:3000/lotSelect');
+const reqCusModal = async () => {
+  const res = await axios.get('http://localhost:3000/reqCusModal');
   materialRowData1.value = res.data.map((mat) => ({
-    LOT번호: mat.PRD_LOT,
-    제품코드: mat.PRD_CODE,
-    제품명: mat.PRD_NAME,
-    제품유형: mat.PRD_TYPE,
-    재고수량: mat.RECEIVED_QTY,
-    입고일자: mat.RECEIVED_DATE
+    거래처코드: mat.CUS_ID,
+    거래처명: mat.CUS_NAME,
+    거래담당자: mat.CUS_MANAGER
   }));
 };
 
@@ -138,13 +164,20 @@ const openModal1 = async (title, rowData, colDefs) => {
     modalRef1.value.open();
   }
 };
+function onModalConfirm(selectedRow) {
+  if (!selectedRow) return;
 
+  // 단일 선택일 경우
+  form.order = selectedRow.주문서번호 || '';
+  form.customer = selectedRow.거래처명 || '';
+  form.cusId = selectedRow.거래처코드;
+}
 function modalConfirm(selectedRow) {
   if (!Array.isArray(selectedRow)) selectedRow = [selectedRow];
 
   // 선택된 항목들 그리드에 추가
   selectedRow.forEach((row) => {
-    rowData.value.push({
+    rowData.value.unshift({
       제품명: row.제품명 || '',
       제품코드: row.제품코드 || '',
       제품유형: row.제품유형 || '',
@@ -165,46 +198,34 @@ function resetForm() {
 
   rowData.value = [];
 }
+const gridApiMat = ref(null); // mat 그리드 API 저장용
 
-// async function submitForm() {
-//   try {
-//     if (!form.supplier || !form.manager || !form.orderDate || !form.dueDate) {
-//       alert('모든 필드를 입력해주세요.');
-//       return;
-//     }
-//     if (rowData.value.length === 0) {
-//       alert('자재를 선택해주세요.');
-//       return;
-//     }
-
-//     // 1. 발주서 데이터 (PO_NO는 Node에서 생성)
-//     const orderData = {
-//       SUPPLYER: form.supplier,
-//       ORDER_DATE: form.orderDate,
-//       PO_DDAY: form.dueDate,
-//       MANAGER: form.manager,
-//       PO_STATUS: '대기'
-//     };
-
-//     // 2. 상세 데이터
-//     const detailList = rowData.value.map((row) => ({
-//       MAT_CODE: row.자재코드,
-//       RECEIPT_QTY: row.수량 || 0
-//     }));
-
-//     // 3. POST 요청
-//     await axios.post('http://localhost:3000/material/order/insert', {
-//       orderData,
-//       detailList
-//     });
-
-//     alert('등록 되었습니다.');
-//     resetForm();
-//   } catch (error) {
-//     console.error(error);
-//     alert('등록 중 오류가 발생했습니다.');
-//   }
-// }
+const onGridReadyMat = (params) => {
+  gridApiMat.value = params.api;
+};
+async function submitForm() {
+  if (!form.value.CUS_NAME) {
+    alert('거래처가 조회되지 않았습니다.');
+    return;
+  }
+  const selectedRows = gridApiMat.value.getSelectedRows();
+  if (selectedRows.length === 0) {
+    alert('입고할 제품을 선택하세요');
+    return;
+  }
+  const condition = {
+    CUS_NAME: form.value.customer,
+    REQ_DATE: form.value.orderDate,
+    REQ_DDAY: form.value.dueDate,
+    WRITER: form.value.writer
+  };
+  await axios.post('http://localhost:3000/reqInsert', condition);
+  const payload = selectedRows.map((r) => ({
+    REQ_QTY: r.주문수량,
+    PRD_CODE: r.제품코드
+  }));
+  await axios.post('http://localhost:3000/reqDetailInsert', payload);
+}
 
 const page = ref({ title: '출하지시서 등록' });
 const breadcrumbs = shallowRef([
