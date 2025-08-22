@@ -24,7 +24,6 @@
             <v-card variant="outlined" class="tight">
               <v-card-title class="tight-title">지시목록</v-card-title>
 
-              <!-- ✅ 5개 고정 / 고정헤더 / 높이 고정 / 푸터 제거 -->
               <v-data-table
                 class="no-hover table-fixed"
                 density="compact"
@@ -45,12 +44,11 @@
                 </template>
 
                 <template #item.stateCol="{ item }">
-                  <v-chip size="x-small" :color="stateColor(overallState(item))" variant="tonal">
+                  <v-chip size="small" :color="stateColor(overallState(item))" variant="tonal">
                     {{ overallState(item) }}
                   </v-chip>
                 </template>
 
-                <!-- ✅ 지시 선택 버튼: 선택/선택됨 -->
                 <template #item.pick="{ item }">
                   <v-btn
                     class="btn-xs"
@@ -83,7 +81,6 @@
 
                 <div v-if="pickedOrder" class="mt-2">
                   <div class="label mb-1">공정별 생산량</div>
-                  <!-- ✅ 높이/행수 고정 -->
                   <v-data-table
                     class="no-hover no-scroll"
                     :headers="procHeaders"
@@ -101,7 +98,7 @@
                     </template>
 
                     <template #item.state="{ item }">
-                      <v-chip size="x-small" :color="stateChipColor(item.state)" variant="tonal">
+                      <v-chip size="small" :color="stateChipColor(item.state)" variant="tonal">
                         {{ item.stateLabel }}
                       </v-chip>
                     </template>
@@ -110,7 +107,6 @@
 
                 <div class="mt-3">
                   <div class="label">작업자 선택</div>
-                  <!-- ✅ 버튼 높이/스크롤 고정 -->
                   <div class="grid-btns workers-scroll">
                     <v-btn
                       v-for="w in workers"
@@ -133,7 +129,7 @@
                       :key="p.code"
                       class="grid-btn btn-sm"
                       :color="pickedProcess === p.code ? 'primary' : undefined"
-                      @click="pickedProcess = p.code"
+                      @click="onPickProcess(p.code)"
                     >
                       <div class="bold">{{ p.name }}</div>
                       <div class="muted small">{{ p.code }}</div>
@@ -154,7 +150,6 @@
                 <div v-if="!pickedProcess" class="muted">공정을 먼저 선택하세요.</div>
 
                 <template v-else>
-                  <!-- ✅ 5개 고정 / 높이 고정 / 푸터 제거 -->
                   <v-data-table
                     class="no-hover table-fixed"
                     :headers="eqHeaders"
@@ -168,7 +163,7 @@
                     hide-default-footer
                   >
                     <template #item.status="{ item }">
-                      <v-chip size="x-small" :color="statusColor(item.status)" variant="tonal">
+                      <v-chip size="small" :color="statusColor(item.status)" variant="tonal">
                         {{ statusLabel(item.status) }}
                       </v-chip>
                     </template>
@@ -203,7 +198,7 @@
           </div>
           <div class="sum-right">
             <span class="muted">현재 공정 상태</span>
-            <v-chip size="x-small" :color="stateChipColor(psNow?.status)" variant="tonal" class="ml-2">
+            <v-chip size="small" :color="stateChipColor(psNow?.status)" variant="tonal" class="ml-2">
               {{ stateLabelFor(psNow?.status) }}
             </v-chip>
           </div>
@@ -297,7 +292,7 @@ const onClickNext = () => {
 /* 지시/작업자 */
 const orders = computed(() => store.orders ?? []);
 const workers = computed(() => store.workers);
-const orderPage = ref(1); // ✅ 페이지 상태
+const orderPage = ref(1);
 
 /* 선택값 */
 const pickedOrder = ref(null);
@@ -327,12 +322,12 @@ async function loadEquipmentsByProcess(procCode = '') {
   }));
 }
 
-/* 테이블 헤더(폭 고정 느낌) */
+/* 테이블 헤더 */
 const orderHeaders = [
   { title: '지시번호', value: 'issueNumber', width: 160 },
   { title: '제품명', value: 'productName', width: 220 },
   { title: '유형', value: 'productType', width: 90 },
-  { title: '상태', value: 'stateCol', sortable: false, width: 90 },
+  { title: '상태', value: 'stateCol', sortable: false, width: 110 },
   { title: '진행률', value: 'progressCol', sortable: false, width: 140, align: 'end' },
   { title: '선택', value: 'pick', sortable: false, width: 80, align: 'end' }
 ];
@@ -340,7 +335,7 @@ const orderHeaders = [
 const eqHeaders = [
   { title: 'Id', value: 'id', width: 90 },
   { title: 'Name', value: 'name', width: 160 },
-  { title: 'Status', value: 'status', sortable: false, width: 90 },
+  { title: 'Status', value: 'status', sortable: false, width: 100 },
   { title: '선택', value: 'pick', sortable: false, width: 80, align: 'end' }
 ];
 
@@ -355,15 +350,60 @@ function pickEquip(row) {
   pickedEquipId.value = row.id;
 }
 
-/* 공정/지시 관련 계산 */
-function overallState(o) {
-  const list = Object.values(o.processes || {});
-  if (!list.length) return 'N/A';
-  if (list.some((p) => p?.status === 'RUN')) return '생산중';
-  if (list.every((p) => p?.status === 'DONE')) return '생산완료';
+/* 공정/지시 관련 계산 + 라벨링 */
+const PROCESS_ORDER = ['CUT', 'FAB', 'POL', 'PAI', 'ASM'];
+const processName = (code) => PROCESS_LIST.find((p) => p.code === code)?.name || code;
+
+/* ▶ 공정 선택 가드 */
+function getRequiredCodes() {
+  if (!pickedOrder.value) return [];
+  const isSemi = pickedOrder.value.productType === '반제품';
+  return PROCESS_ORDER.filter((c) => !(isSemi && c === 'ASM'));
+}
+function getPrevProcess(code) {
+  const codes = getRequiredCodes();
+  const idx = codes.indexOf(code);
+  if (idx <= 0) return null;
+  return codes[idx - 1];
+}
+function isPrevDone(code) {
+  const prev = getPrevProcess(code);
+  if (!prev) return true; // 첫 공정은 바로 가능
+  const st = pickedOrder.value?.processes?.[prev]?.status;
+  return st === 'DONE';
+}
+function onPickProcess(code) {
+  if (!pickedOrder.value) {
+    pickedProcess.value = code;
+    return;
+  }
+  if (!isPrevDone(code)) {
+    const prev = getPrevProcess(code);
+    alert(`이전공정을 완료해주세요. (${processName(prev)})`);
+    return;
+  }
+  pickedProcess.value = code;
+}
+
+function overallState(order) {
+  if (!order || !order.processes) return 'N/A';
+  const isSemi = order.productType === '반제품';
+  const codes = PROCESS_ORDER.filter((c) => !(isSemi && c === 'ASM'));
+  const states = codes.map((c) => order.processes?.[c]?.status || 'IDLE');
+
+  if (states.length && states.every((s) => s === 'DONE')) return '생산완료';
+  if (states.some((s) => s === 'RUN')) return '생산중';
+  for (let i = states.length - 1; i >= 0; i--) {
+    if (states[i] === 'DONE') return `${processName(codes[i])}완료`;
+  }
   return '생산대기';
 }
-const stateColor = (s) => (s === '생산중' ? 'primary' : s === '생산완료' ? 'success' : 'grey');
+const stateColor = (label) => {
+  if (label === '생산중') return 'primary';
+  if (label === '생산완료' || /완료$/.test(label)) return 'success';
+  return 'grey';
+};
+
 const orderProgress = (o) => {
   const list = Object.values(o.processes || {});
   if (!list.length) return 0;
@@ -381,7 +421,7 @@ const procHeaders = [
   { title: '공정', value: 'name', width: 90 },
   { title: '생산량', value: 'qty', align: 'end', width: 120 },
   { title: '진행률', value: 'progress', align: 'end', sortable: false, width: 140 },
-  { title: '상태', value: 'state', align: 'end', sortable: false, width: 90 }
+  { title: '상태', value: 'state', align: 'end', sortable: false, width: 100 }
 ];
 
 const processesForProduct = computed(() => {
@@ -394,7 +434,7 @@ const pickedProcessName = computed(() => PROCESS_LIST.find((p) => p.code === pic
 const requiredProcessCodes = computed(() => {
   if (!pickedOrder.value) return [];
   const isSemi = pickedOrder.value.productType === '반제품';
-  return PROCESS_LIST.filter((p) => !(isSemi && p.code === 'ASM')).map((p) => p.code);
+  return PROCESS_ORDER.filter((c) => !(isSemi && c === 'ASM'));
 });
 const procProduced = (order, code) => order?.processes?.[code]?.prodQty ?? 0;
 const producedOverall = computed(() => {
@@ -412,30 +452,46 @@ const currentProcRemaining = computed(() =>
 );
 const allowedInputCap = computed(() => Math.min(remainingQty.value, currentProcRemaining.value));
 
+/* 공정별 테이블 라벨 */
 const procRows = computed(() => {
   if (!pickedOrder.value) return [];
-  const isSemi = pickedOrder.value.productType === '반제품';
-  const codes = PROCESS_LIST.filter((p) => !(isSemi && p.code === 'ASM')).map((p) => p.code);
+  const codes = requiredProcessCodes.value;
   return codes.map((code) => {
     const pinfo = PROCESS_LIST.find((p) => p.code === code);
     const st = pickedOrder.value.processes[code];
     const qty = st?.prodQty ?? 0;
     const prog = st?.progress ?? 0;
+
+    const baseName = pinfo?.name || code;
+    let label;
+    if (st?.status === 'RUN') label = '생산중';
+    else if (st?.status === 'IDLE') label = '생산대기';
+    else if (st?.status === 'DONE') label = `${baseName}완료`;
+    else label = '준비';
+
     return {
       code,
-      name: pinfo?.name || code,
+      name: baseName,
       qty: `${qty} / ${pickedOrder.value.targetQty}`,
       progress: prog,
       state: st?.status || 'WAIT',
-      stateLabel: st?.status === 'RUN' ? '생산중' : st?.status === 'DONE' ? '완료' : st?.status === 'IDLE' ? '대기' : '준비'
+      stateLabel: label
     };
   });
 });
 function stateChipColor(state) {
-  return state === 'RUN' ? 'primary' : state === 'DONE' ? 'success' : 'grey';
+  if (state === 'RUN') return 'primary';
+  if (state === 'DONE') return 'success';
+  return 'grey';
 }
 function stateLabelFor(state) {
-  return state === 'RUN' ? '생산중' : state === 'DONE' ? '완료' : state === 'IDLE' ? '대기' : '준비';
+  if (state === 'RUN') return '생산중';
+  if (state === 'IDLE') return '생산대기';
+  if (state === 'DONE') {
+    const nm = (pickedProcessName?.value || '').trim();
+    return nm ? `${nm}완료` : '완료';
+  }
+  return '준비';
 }
 
 /* 키패드/시간 */
@@ -465,13 +521,16 @@ watch(pickedProcess, async (code) => {
 /* 제어 */
 async function doStart() {
   if (!pickedOrder.value || !pickedProcess.value || !pickedWorker.value) return;
+  if (!isPrevDone(pickedProcess.value)) {
+    const prev = getPrevProcess(pickedProcess.value);
+    return alert(`이전공정을 완료해주세요. (${processName(prev)})`);
+  }
   if (!pickedEquipId.value) return alert('설비를 선택하세요.');
   if (inputQty.value <= 0) return alert('투입량을 입력하세요.');
 
   const startAt = nowISO();
   ctrlTime.value.startAt = startAt;
   ctrlTime.value.endAt = '';
-
   const res = await store.startJob({
     orderId: Number(pickedOrder.value.id),
     process: pickedProcess.value,
@@ -483,7 +542,6 @@ async function doStart() {
   if (!res?.ok) return alert(res?.msg || '작업 시작 실패');
 
   ctrlTime.value.startAt = (res.startedAt || startAt).replace(' ', 'T').slice(0, 16);
-
   const st = pickedOrder.value.processes[pickedProcess.value] ?? (pickedOrder.value.processes[pickedProcess.value] = {});
   st.status = 'RUN';
   st.progress = Math.min(99, st.progress ?? 0);
@@ -491,7 +549,6 @@ async function doStart() {
 
   const eq = equipments.value.find((e) => e.id === pickedEquipId.value);
   if (eq) eq.status = EQ.IN_USE;
-
   alert('작업이 시작되었습니다.');
 }
 
@@ -516,7 +573,6 @@ async function doFinish() {
     if (!res?.ok) return alert(res?.msg || '작업종료 실패');
 
     ctrlTime.value.endAt = (res.endedAt || endAt).replace(' ', 'T').slice(0, 16);
-
     const st = pickedOrder.value.processes[pickedProcess.value] ?? (pickedOrder.value.processes[pickedProcess.value] = {});
     if (typeof res.prodQty === 'number') st.prodQty = res.prodQty;
     if (typeof res.progress === 'number') st.progress = res.progress;
@@ -562,7 +618,7 @@ onMounted(async () => {
   padding: 8px var(--pad);
 }
 .tight-body {
-  padding: 8px var(--pad) 14px; /* 10px → 14px */
+  padding: 8px var(--pad) 14px;
 }
 .wizard-head {
   display: flex;
@@ -631,7 +687,7 @@ onMounted(async () => {
   min-height: 40px;
   padding: 0 14px;
   font-weight: 700;
-} /* ↑ 32 -> 40 */
+}
 .btn-md {
   min-height: 44px;
   padding: 0 16px;
@@ -642,7 +698,7 @@ onMounted(async () => {
 .grid-btns {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px; /* 6px → 8px */
+  gap: 8px;
 }
 .grid-btn {
   justify-content: flex-start;
@@ -650,10 +706,10 @@ onMounted(async () => {
   align-items: flex-start;
 }
 .workers-scroll {
-  max-height: 160px; /* 140px → 160px */
+  max-height: 160px;
   overflow: auto;
-  padding-bottom: 10px; /* 하단 여유 추가 */
-  margin-bottom: 8px; /* 카드 경계와 간격 */
+  padding-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 .procs-grid {
