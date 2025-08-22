@@ -32,6 +32,11 @@ const query = async (alias, values) => {
   }
 };
 
+// 트랜잭션용 커넥션을 직접 가져오는 함수
+const getConnection = async () => {
+  return await connectionPool.getConnection();
+};
+
 module.exports = {
   query,
 };
