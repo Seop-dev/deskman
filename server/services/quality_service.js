@@ -69,7 +69,7 @@ const addRejectPrd = async (b) => {
   try {
     await conn.beginTransaction();
 
-    // 🔐 PRD_CERT_ID를 딱 1번만 뽑아서 두 테이블에 동일하게 사용
+    // PRD_CERT_ID를 딱 1번만 뽑아서 두 테이블에 동일하게 사용
     const [{ NEXT_ID }] = await conn.query(
       `SELECT GetNextPRD_CERT_ID() AS NEXT_ID`
     );
@@ -87,27 +87,26 @@ const addRejectPrd = async (b) => {
         NEXT_ID,
         Number(b.TP_ID) || 0,
         String(b.PRD_CODE || ""),
-        b.PRD_NAME || null,
+        String(b.PRD_NAME || ""),
         Number(b.TOTAL_QTY) || 0,
-        b.PRD_TYPE || null,
-        String(b.Q_CHECKED_DATE || ""), // 'YYYY-MM-DD'
-        b.CREATED_BY || null,
+        String(b.PRD_TYPE || ""),
+        String(b.Q_CHECKED_DATE || ""),
+        String(b.CREATED_BY || ""),
       ]
     );
 
-    // 2) REJECTED_PRODUCT (상세)
+    // 2) REJECTED_PRODUCT (상세) - 수정된 부분
     await conn.query(
       `
       INSERT INTO REJECTED_PRODUCT
         (RJT_PRD_ID, PRD_CERT_ID, PRD_CODE, RJT_CODE, RJT_REASON)
       VALUES
-        (GetNextRJT_PRD_ID(), ?, ?, ?, ?)
+        (GetNextRJT_PRD_ID(), ?, ?, GetNextRJT_CODE(), ?)
       `,
       [
         NEXT_ID, // 동일한 PRD_CERT_ID 사용
         String(b.PRD_CODE || ""),
-        b.RJT_CODE || null,
-        String(b.RJT_REASON || "").slice(0, 100),
+        String(b.RJT_REASON || "").slice(0, 500), // 길이 제한 조정
       ]
     );
 
@@ -137,7 +136,7 @@ const updateQstd = async (b) => {
 // 품질기준추가
 const insertQstd = async (payload) => {
   const {
-    id, // ✅ PK 있으면 최우선
+    id, //  PK 있으면 최우선
     type, // STD_TYPE
     stdName, // 변경될 STD_NAME
     allowedValue, // 변경될 ALLOWED_VALUE

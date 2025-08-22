@@ -41,31 +41,45 @@ router.post("/passmat", async (req, res) => {
 });
 
 // 불합격원자재 등록
-router.post("/rjtmat", async (req, res) => {
+
+// 불합격제품 등록 (수정된 버전)
+router.post("/rejectprd", async (req, res) => {
   try {
-    const body = req.body || {};
-    const {
-      RECEIPT_NO,
-      MAT_CODE,
-      RJT_REASON,
-      Q_CHECKED_DATE,
-      TOTAL_QTY,
-      CREATED_BY,
-    } = body;
-    const result = await qualityService.addRejectMat({
-      RECEIPT_NO,
-      MAT_CODE,
-      RJT_REASON,
-      Q_CHECKED_DATE, // 'YYYY-MM-DD'
-      TOTAL_QTY,
-      CREATED_BY,
+    const b = req.body || {};
+    console.log("불합격제품 등록 요청 데이터:", JSON.stringify(b, null, 2));
+
+    // 필수 필드 검증
+    // if (!b.TP_ID || !b.PRD_CODE || !b.RJT_REASON) {
+    //   return res.status(400).json({
+    //     ok: false,
+    //     message: "필수 필드가 누락되었습니다. (TP_ID, PRD_CODE, RJT_REASON)",
+    //   });
+    // }
+
+    const result = await qualityService.addRejectPrd({
+      TP_ID: Number(b.TP_ID) || 0,
+      PRD_CODE: String(b.PRD_CODE || ""),
+      PRD_NAME: String(b.PRD_NAME || ""),
+      PRD_TYPE: String(b.PRD_TYPE || ""),
+      TOTAL_QTY: Number(b.TOTAL_QTY) || 0,
+      Q_CHECKED_DATE: String(b.Q_CHECKED_DATE || ""),
+      CREATED_BY: String(b.CREATED_BY || ""),
+      RJT_REASON: String(b.RJT_REASON || ""),
     });
-    return res.json({ ok: true, affected: result.affectedRows ?? 0 });
-  } catch (err) {
-    console.error("[/rjtmat] ERROR:", err);
-    return res
-      .status(500)
-      .json({ ok: false, message: err.message, detail: String(err) });
+
+    console.log("불합격제품 등록 결과:", result);
+    return res.status(201).json({
+      ok: true,
+      prdCertId: result.PRD_CERT_ID,
+      message: "불합격 제품이 성공적으로 등록되었습니다.",
+    });
+  } catch (e) {
+    console.error("[POST /rejectprd] error:", e);
+    return res.status(500).json({
+      ok: false,
+      message: "불합격 제품 등록 중 오류가 발생했습니다.",
+      error: String(e?.message || e),
+    });
   }
 });
 
@@ -104,6 +118,7 @@ router.post("/passprd", async (req, res) => {
 router.post("/rejectprd", async (req, res) => {
   try {
     const b = req.body || {};
+    console.log("불합격제품 등록 시도 =>" + b);
     const r = await qualityService.addRejectPrd(b); // { ok:true, PRD_CERT_ID: '...' }
     return res.status(201).json({ ok: true, prdCertId: r.PRD_CERT_ID });
   } catch (e) {

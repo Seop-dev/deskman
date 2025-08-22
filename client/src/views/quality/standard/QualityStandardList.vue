@@ -53,12 +53,11 @@ const breadcrumbs = shallowRef([
   { title: '품질 기준 조회', disabled: false, href: '#' }
 ]);
 
-// ✅ 동적 드롭다운 & 필터 전 원본 데이터
+// 동적 드롭다운 & 필터 전 원본 데이터
 const productTypes = ref([]); // v-select items
 const rawRows = ref([]); // 서버 전체 결과(필터 전)
 
 // 컬럼 정의 (원하시면 제품 구분 컬럼도 표시 가능)
-// { headerName: '제품 구분', field: 'type', width: 120 },
 const colDefs = ref([
   { headerName: '기준명', field: 'stdName', flex: 1, suppressSizeToFit: true },
   { headerName: '허용수치', field: 'allowedValue', flex: 1, suppressSizeToFit: true }
@@ -98,7 +97,7 @@ const getQStandardList = async () => {
   }
 };
 
-// ✅ 공통 필터(타입, 키워드)
+// 공통 필터(타입, 키워드)
 const applyFilters = () => {
   let rows = [...rawRows.value];
 
@@ -136,7 +135,7 @@ const onGridReady = (e) => {
 
 // 컴포넌트 마운트 시 초기 데이터 로드
 onMounted(() => {
-  getQStandardList(); // ✅ /qstdlist에서 전부 로드
+  getQStandardList();
 });
 
 // 타입 변경 시 자동 필터
