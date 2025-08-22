@@ -163,8 +163,42 @@ const deleteAccount = `
   WHERE CUS_ID=?
 
 `;
+// 출하지시서 주문서 조회 모달
+const shipModalSelect = `SELECT 
+    r.REQ_ID,       -- 주문서 번호
+    r.REQ_DATE,     -- 주문일자
+    r.CUS_ID,       -- 거래처 ID
+    p.PRD_NAME,     -- 제품명 (추가)
+    d.REQ_QTY,      -- 주문 수량
+    r.REQ_DDAY      -- 납기일
+FROM CUSTOMER_REQUEST AS r
+JOIN REQUEST_DETAIL AS d
+    ON r.REQ_ID = d.REQ_ID
+JOIN PRODUCT AS p
+    ON d.PRD_CODE = p.PRD_CODE
+ORDER BY REQ_DATE DESC
+`;
+
+// 입고제품 모달 조회.
+const shipPrdSelect = `SELECT 
+    pr.RECEIVED_QTY, 
+    pr.RECEIVED_DATE,
+    pr.PRD_CODE, 
+    p.PRD_NAME, 
+    p.PRD_TYPE, 
+    pr.PRD_LOT
+FROM PRODUCT_RECEIPT AS pr
+JOIN REQUEST_DETAIL AS rd
+    ON pr.PRD_CODE = rd.PRD_CODE
+JOIN PRODUCT AS p
+    ON pr.PRD_CODE = p.PRD_CODE
+WHERE rd.REQ_ID = ?   -- 특정 주문서 ID 바인딩
+ORDER BY pr.RECEIVED_DATE DESC
+`;
 
 // 출하지시서 등록버튼
+const shipInsert = `INSERT INTO SHIPMENT (SHIP_NO,REQ_ID,CUS_ID,PRD_LOT,PRD_NAME,SHIP_ORDER_DATE,SHIP_WRITER,WR_NAME,PRD_CODE,PRD_NAME,QTY,D_DAY)
+VALUES (GetNextShip_NO(),?,?,?,?,?,?,?,?,?,?,?)`;
 
 module.exports = {
   insertAccount,
@@ -186,4 +220,7 @@ module.exports = {
   reqSelect,
   reqUpdateStatusByIdsCsv,
   deleteAccount,
+  shipModalSelect,
+  shipPrdSelect,
+  shipInsert,
 };
