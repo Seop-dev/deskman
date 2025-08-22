@@ -6,6 +6,7 @@ const quality = require("./sqls/quality.js");
 const master = require("./sqls/master.js");
 const marketing = require("./sqls/marketing.js");
 const login = require("./sqls/user.js");
+const facility = require("./sqls/facility.js");
 
 module.exports = {
   ...boards,
@@ -16,4 +17,5 @@ module.exports = {
   ...master,
   ...marketing,
   ...login,
+  ...facility,
 };
