@@ -120,19 +120,22 @@ router.get("/marketing/getacclist", async (req, res) => {
 });
 
 // 거래처 삭제
-router.delete("/marketing/deleteacc/bulk", async (req, res) => {
-  const { ids } = req.body; // 배열
-  if (!Array.isArray(ids) || !ids.length) {
-    return res.status(400).json({ error: "ids 배열 필요" });
-  }
+router.post('/deleteacc/bulk', async (req, res) => {
   try {
-    const result = await marketingService.deleteAccount(ids);
-    res.json({ ok: true, deleted: result });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "DB error" });
+    const { ids } = req.body;
+    console.log("📌 요청 ids:", ids);
+
+    const result = await mariadb.query('deleteAccount', ids);
+    console.log("📌 삭제 실행 결과:", result);
+
+    res.json({ ok: true });
+  } catch (e) {
+    console.error("❌ 삭제 에러:", e);
+    res.status(500).json({ ok: false, msg: e.message });  // 클라이언트에도 원인 전달
   }
 });
+
+
 
 // 출하지시서등록 - 주문서모달
 router.get("/shipModalSelect", async (req, res) => {
