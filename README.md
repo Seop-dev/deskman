@@ -79,7 +79,6 @@
 - ERD Cloud  
 
 ### OS
-- Windows 10  
-- Windows 11  
+- Windows 10/11  
 - Ubuntu 24.04 LTS  
 
