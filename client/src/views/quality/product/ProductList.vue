@@ -2,11 +2,10 @@
   <BaseBreadcrumb :title="page.title" :breadcrumbs="breadcrumbs"></BaseBreadcrumb>
 
   <UiParentCard>
+    <!-- 버튼 -->
     <v-row class="mb-4" justify="space-between" align="center">
       <v-col cols="auto">
         <v-btn color="warning" class="mr-2 button" @click="openModal('제품유형', materialRowData, materialColDefs)">제품조회 </v-btn>
-      </v-col>
-      <v-col>
         <v-btn color="error" class="top_btn_ser" variant="elevated" @click="resetForm">초기화</v-btn>
       </v-col>
       <MoDal ref="modalRef" :title="modalTitle" :rowData="modalRowData" :colDefs="modalColDefs" @confirm="onModalConfirm" />
@@ -25,7 +24,7 @@
         <v-text-field label="제품명" v-model="form.prdName" dense outlined />
       </v-col>
     </v-row>
-    <br />
+
     <ag-grid-vue
       :rowData="gridData"
       :columnDefs="colDefs"

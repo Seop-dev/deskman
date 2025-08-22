@@ -126,10 +126,15 @@ const selectQstd = async () => {
 };
 
 // 품질기준변경
-const updateQstd = async (b) => {
+const rejectMatQstd = async (b) => {
   const type = String(b.type ?? b.TYPE ?? b.STD_TYPE ?? "");
   const stdName = String(b.stdName ?? b.STD_NAME ?? "");
   const allowedValue = String(b.allowedValue ?? b.ALLOWED_VALUE ?? "");
+  const params = {
+    type: type,
+    stdName: stdName,
+    allowedValue: allowedValue,
+  };
   return await mariadb.query("UpdateQStandard", params);
 };
 
@@ -205,8 +210,8 @@ module.exports = {
   addPassPrd,
   addRejectPrd,
   selectQstd,
-  updateQstd,
   insertQstd,
   qcCommonCode,
   matCommonCode,
+  rejectMatQstd,
 };
