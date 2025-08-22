@@ -91,7 +91,13 @@ import axios from 'axios';
 import MoDal from '../common/NewModal.vue';
 // 토스트
 import { useToast } from 'vue-toast-notification';
+import 'vue-toast-notification/dist/theme-bootstrap.css';
 const $toast = useToast();
+
+// 로그인 세션 정보
+import { useAuthStore } from '@/stores/auth';
+const authStore = useAuthStore();
+
 //{ position: 'top-right', duration: 1000 }
 
 const searchKeyword = ref([]);
@@ -113,7 +119,7 @@ const quartz = themeQuartz;
 const form = ref({
   empNo: '', //
   phone: '',
-  empName: '',
+  empName: authStore.user?.name || '',
   hireDate: '',
   auth: '',
   dept: '',
@@ -183,7 +189,7 @@ const fetchCommonCodes = async () => {
 const searchData = async (searchKeyword) => {
   console.log(searchKeyword);
   if (!searchKeyword.value) {
-    $toast.error('사원이 입력되지 않았습니다');
+    $toast.warning('사원이 입력되지 않았습니다');
     return;
   }
   const params = { EMP_NAME: `%${searchKeyword}%` };
@@ -259,7 +265,7 @@ const del = async () => {
 
   const selectedRows = gridApi.getSelectedRows();
   if (selectedRows.length === 0) {
-    alert('삭제할 항목을 선택하세요');
+    $toast.warning('삭제할 사원을 선택하세요', { position: 'top-right', duration: 1000 });
     return;
   }
   const deleteRow = { empNo: selectedRows[0].사원번호 };

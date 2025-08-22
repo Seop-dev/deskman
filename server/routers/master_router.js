@@ -465,4 +465,11 @@ router.post("/wrShipUpdate", async (req, res) => {
   }
 });
 
+// 출하 - 운송업체 조회
+
+router.get("/wrDelivery", async (req, res) => {
+  let list = await masterService.wrDelivery();
+  res.send(list);
+});
+
 module.exports = router;

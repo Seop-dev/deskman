@@ -452,6 +452,12 @@ const wrShipUpdate = async (rows) => {
   return { success: true };
 };
 
+// 출하 - 운송업체 조회
+
+const wrDelivery = async () => {
+  let list = await mariadb.query("wrDelivery");
+  return list;
+};
 module.exports = {
   masterEmpSelect,
   masterEmpInsert,
@@ -504,4 +510,5 @@ module.exports = {
   masterPrcSelect,
   wrShip,
   wrShipUpdate,
+  wrDelivery,
 };

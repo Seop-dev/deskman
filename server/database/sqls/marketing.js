@@ -57,7 +57,8 @@ const inboundSearch = `SELECT PRD_CERT_ID,
 
 /* 주문서 등록 모달(거래처/제품) */
 const reqCusModal = `SELECT CUS_ID, CUS_NAME, CUS_MANAGER FROM CUSTOMERS
-WHERE CUS_TYPE ='고객사'`;
+WHERE CUS_TYPE ='고객사'
+AND CUS_USE = 1`;
 const reqPrdModal = `SELECT PRD_CODE, PRD_NAME,PRD_TYPE,PRD_UNIT,PRD_SIZE FROM PRODUCT`;
 
 /* 주문서 등록전 함수호출 */

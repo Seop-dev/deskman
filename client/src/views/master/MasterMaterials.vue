@@ -20,7 +20,6 @@
           @rowClicked="onRowClicked"
           @grid-ready="onGridReadyMat"
         >
-          <!--  :defaultColDef="{ width: 150 }" 로 전체 width지정도가능-->
         </ag-grid-vue>
       </div>
       <div class="form-wrapper">
@@ -76,7 +75,6 @@
 </template>
 
 <script setup>
-// 기존 스크립트 내용은 동일합니다.
 import { ref, shallowRef, onMounted } from 'vue';
 import BaseBreadcrumb from '@/components/shared/BaseBreadcrumb.vue';
 import { themeQuartz } from 'ag-grid-community';
@@ -84,15 +82,25 @@ import { AgGridVue } from 'ag-grid-vue3';
 import UiParentCard from '@/components/shared/UiParentCard.vue';
 import axios from 'axios';
 import MoDal from '../common/NewModal.vue';
+
+// 토스트
+import { useToast } from 'vue-toast-notification';
+import 'vue-toast-notification/dist/theme-bootstrap.css';
+const $toast = useToast();
+
+// 로그인 세션 정보
+import { useAuthStore } from '@/stores/auth';
+const authStore = useAuthStore();
+
 const quartz = themeQuartz;
 const rowSelection = ref({
   mode: 'multiRow'
 });
 const today = new Date().toISOString().split('T')[0];
 const form = ref({
-  matCode: '', //
+  matCode: '',
   matName: '',
-  writer: '',
+  writer: authStore.user?.name || '',
   date: today,
   size: '',
   safeQT: '',
@@ -107,6 +115,7 @@ onMounted(() => {
   typeList();
   unitList();
 });
+
 // 제품 리스트
 const rowData1 = ref([]);
 
@@ -124,16 +133,8 @@ const colDefs1 = ref([
 
 const page = ref({ title: '자재 관리' });
 const breadcrumbs = shallowRef([
-  {
-    title: '기준정보',
-    disabled: true,
-    href: '#'
-  },
-  {
-    title: '자재 관리',
-    disabled: false,
-    href: '#'
-  }
+  { title: '기준정보', disabled: true, href: '#' },
+  { title: '자재 관리', disabled: false, href: '#' }
 ]);
 
 //cell 단위 수정
@@ -145,7 +146,6 @@ const onCellValueChanged = (event) => {
 // 제품 리스트
 const matList = async () => {
   const res = await axios.get('http://localhost:3000/masterMatSelect');
-  console.log(res);
   rowData1.value = res.data.map((prd) => ({
     자재코드: prd.MAT_CODE,
     자재명: prd.MAT_NAME,
@@ -173,52 +173,69 @@ const typeList = async () => {
 
 // 저장버튼
 const submitForm = async () => {
-  console.log(!form.value.matCode);
-  // 수정
-  if (form.value.matCode) {
-    const updateRow = {
-      MAT_NAME: form.value.matName,
-      MAT_TYPE: form.value.type,
-      MAT_UNIT: form.value.unit,
-      MAT_SIZE: form.value.size,
-      MAT_SAFEQT: form.value.safeQT,
-      MAT_WRITER: form.value.writer,
-      MAT_DATE: form.value.date,
-      MAT_NOTE: form.value.note,
-      MAT_CODE: form.value.matCode
-    };
-    const result = await axios.post('http://localhost:3000/masterMatUpdate', updateRow);
-    console.log(result.config.data);
-    matList();
-  } else {
-    // db저장
-    if (!form.value.safeQT || !form.value.type) {
-      alert('값을 올바르게 기재하십시오.');
-      return;
+  try {
+    if (form.value.matCode) {
+      // 수정
+      const updateRow = {
+        MAT_NAME: form.value.matName,
+        MAT_TYPE: form.value.type,
+        MAT_UNIT: form.value.unit,
+        MAT_SIZE: form.value.size,
+        MAT_SAFEQT: form.value.safeQT,
+        MAT_WRITER: form.value.writer,
+        MAT_DATE: form.value.date,
+        MAT_NOTE: form.value.note,
+        MAT_CODE: form.value.matCode
+      };
+      await axios.post('http://localhost:3000/masterMatUpdate', updateRow);
+      $toast.success('자재가 수정되었습니다.', { position: 'top-right' });
+    } else {
+      // 신규 등록
+      const exists = rowData1.value.some((item) => item.자재명 === form.value.matName);
+      if (!form.value.matCode && exists) {
+        $toast.warning('이미 등록된 자재입니다.', { position: 'top-right' });
+        return; // 등록 막기
+      }
+      if (!form.value.safeQT || !form.value.type) {
+        $toast.warning('값을 올바르게 기재하십시오.', { position: 'top-right' });
+        return;
+      }
+
+      const newRow = {
+        MAT_NAME: form.value.matName,
+        MAT_TYPE: form.value.type,
+        MAT_UNIT: form.value.unit,
+        MAT_SIZE: form.value.size,
+        MAT_SAFEQT: form.value.safeQT,
+        MAT_WRITER: form.value.writer,
+        MAT_DATE: form.value.date,
+        MAT_NOTE: form.value.note
+      };
+      await axios.post('http://localhost:3000/masterMatInsert', newRow);
+      $toast.success('자재가 등록되었습니다.', { position: 'top-right' });
     }
-    const newRow = {
-      MAT_NAME: form.value.matName,
-      MAT_TYPE: form.value.type,
-      MAT_UNIT: form.value.unit,
-      MAT_SIZE: form.value.size,
-      MAT_SAFEQT: form.value.safeQT,
-      MAT_WRITER: form.value.writer,
-      MAT_DATE: form.value.date,
-      MAT_NOTE: form.value.note
-    };
-    const result = await axios.post('http://localhost:3000/masterMatInsert', newRow);
-    console.log(result.config.data);
     matList();
+    resetForm();
+  } catch (err) {
+    $toast.error('저장 중 오류가 발생했습니다.', { position: 'top-right' });
+    console.error(err);
   }
 };
-// 폼 데이터를 초기화하는 함수
+
+// 폼 초기화
 const resetForm = () => {
   form.value = {
-    empName: '',
-    addDate: '',
-    empNo: '',
-    diagram: ''
+    matCode: '',
+    matName: '',
+    writer: authStore.user?.name || '',
+    date: today,
+    size: '',
+    safeQT: '',
+    unit: '',
+    type: '',
+    note: ''
   };
+  $toast.info('초기화되었습니다.', { position: 'top-right' });
 };
 
 // 행 선택시 등록 폼으로
@@ -254,39 +271,51 @@ const modalList = async () => {
     규격: prd.code_name,
     사용유무: prd.use_yn
   }));
-  console.log(res);
 };
 
-//모달 열때 데이터값 자식컴포넌트로
+//모달 열때
 const openModal = async (title, rowData, colDefs) => {
   modalTitle.value = title;
   modalRowData.value = rowData;
   modalColDefs.value = colDefs;
-  if (modalRef.value) {
-    modalRef.value.open();
-  }
+  if (modalRef.value) modalRef.value.open();
 };
 
-// 모달에서 확인시 행추가
+// 모달에서 확인시
 const modalConfirm = async (selectedRow) => {
   form.value.size = selectedRow.규격;
+  $toast.info(`규격 [${selectedRow.규격}] 선택됨`, { position: 'top-right' });
+};
+
+// 삭제 (예시)
+const del = async () => {
+  if (!form.value.matCode) {
+    $toast.warning('삭제할 자재를 선택하세요.', { position: 'top-right' });
+    return;
+  }
+  try {
+    await axios.post('http://localhost:3000/masterMatDelete', { MAT_CODE: form.value.matCode });
+    $toast.success('자재가 삭제되었습니다.', { position: 'top-right' });
+    matList();
+    resetForm();
+  } catch {
+    $toast.error('삭제 중 오류가 발생했습니다.', { position: 'top-right' });
+  }
 };
 </script>
 
 <style scoped>
 .main-container {
   display: flex;
-  gap: 20px; /* 두 컨테이너 사이의 간격 */
+  gap: 20px;
   padding: 0 10px;
 }
-
 .list-container {
-  flex: 1 1 50%; /* flex-grow: 1, flex-shrink: 1, flex-basis: 50% */
+  flex: 1 1 50%;
   min-width: 400px;
 }
-
 .form-wrapper {
-  flex: 1 1 50%; /* list-container와 동일하게 공간을 차지 */
+  flex: 1 1 50%;
   min-width: 400px;
 }
 .radioDiv {

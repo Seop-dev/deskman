@@ -52,7 +52,6 @@ const colDefs1 = ref([
   { field: '제품코드', flex: 1 },
   { field: '제품명', flex: 1 },
   { field: '주문수량', flex: 1 },
-  { field: '출하수량', flex: 1 },
   { field: '미납수량', flex: 1 },
   { field: '납기일자', flex: 1 },
   { field: '출하일자', flex: 1 },
@@ -84,64 +83,20 @@ const breadcrumbs = shallowRef([
 
 const reqSelect = async () => {
   const res = await axios.get('http://localhost:3000/reqSelect');
+  rowData1.value = res.data.map((r) => ({
+    주문일자: r.REQ_DATE,
+    주문번호: r.REQ_ID,
+    업체명: r.CUS_NAME,
+    제품코드: r.PRD_CODE,
+    제품명: r.PRD_NAME,
+    주문수량: r.REQ_QTY,
+    미납수량: r.YET_QTY,
+    납기일자: r.REQ_DDAY,
+    출하일자: r.LAST_SHIP_DATE ? r.LAST_SHIP_DATE.substring(10, 0) : null,
+    주문상태: r.REQ_STATUS
+  }));
   console.log(res);
 };
-
-// const submitForm = () => {
-//   // rowData1 배열에 새로운 행을 추가합니다.
-//   const newRow = {
-//     '✅': false,
-//     제품명: form.value.writer,
-//     model: 'new model', // 필요에 따라 기본값 설정
-//     price: 0, // 필요에 따라 기본값 설정
-//     등록일: form.value.addDate
-//   };
-//   rowData2.value.push(newRow);
-
-//   // 폼 데이터를 초기화합니다.
-//   resetForm();
-// };
-
-// // 폼 데이터를 초기화하는 함수
-// const resetForm = () => {
-//   form.value = {
-//     writer: '',
-//     addDate: ''
-//   };
-// };
-
-// //모달 value들
-// const modalRef = ref(null);
-// const modalTitle = ref('');
-// const modalRowData = ref([]);
-// const modalColDefs = ref([]);
-// const materialColDefs = [
-//   { field: '자재코드', headerName: '자재코드', flex: 2 },
-//   { field: '자재명', headerName: '자재명', flex: 2 },
-//   { field: '자재유형', headerName: '자재유형', flex: 2 },
-//   { field: '수량', headerName: '수량', flex: 1 },
-//   { field: '단위', headerName: '단위', flex: 1 }
-// ];
-// const materialRowData = ref([
-//   { 자재코드: 'ABC-001', 자재명: '나사', 자재유형: '부자재', 수량: 100, 단위: 'EA' },
-//   { 자재코드: 'XYZ-002', 자재명: '강철판', 자재유형: '원자재', 수량: 10, 단위: 'KG' }
-// ]);
-
-// //모달 열때 데이터값 자식컴포넌트로
-// const openModal = (title, rowData, colDefs) => {
-//   modalTitle.value = title;
-//   modalRowData.value = rowData;
-//   modalColDefs.value = colDefs;
-//   if (modalRef.value) {
-//     modalRef.value.open();
-//   }
-// };
-
-// // 모달에서 확인시 행추가
-// const modalConfirm = (selectedRow) => {
-//   console.log(selectedRow);
-//   rowData3.value.push(selectedRow);
-// };
 </script>
 
 <style scoped>
