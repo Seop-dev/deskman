@@ -120,11 +120,14 @@ router.get("/marketing/getacclist", async (req, res) => {
 });
 
 // 거래처 삭제
-router.delete("/marketing/deleteacc/:id", async (req, res) => {
-  const { id } = req.params;
+router.delete("/marketing/deleteacc/bulk", async (req, res) => {
+  const { ids } = req.body; // 배열
+  if (!Array.isArray(ids) || !ids.length) {
+    return res.status(400).json({ error: "ids 배열 필요" });
+  }
   try {
-    const result = await marketingService.deleteAccount(id);
-    res.json(result);
+    const result = await marketingService.deleteAccount(ids);
+    res.json({ ok: true, deleted: result });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "DB error" });

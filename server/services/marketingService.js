@@ -139,9 +139,10 @@ const shipModalSelect = async () => {
   return list;
 };
 // 거래처 삭제
-async function deleteAccount(id) {
+async function deleteAccount(ids) {
   try {
-    const result = await mariadb.query("deleteAccount", [id]);
+    if (!Array.isArray(ids)) ids = [ids]; // 단일도 처리
+    const result = await mariadb.query("deleteAccount", ids);
     return result;
   } catch (e) {
     console.error(e);
