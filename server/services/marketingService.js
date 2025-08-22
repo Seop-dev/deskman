@@ -133,6 +133,11 @@ const shipSelect = async () => {
   return list;
 };
 
+// 출하지시서 등록 모달
+const shipModalSelect = async () => {
+  let list = await mariadb.query("shipModalSelect");
+  return list;
+};
 // 거래처 삭제
 async function deleteAccount(id) {
   try {
@@ -143,6 +148,34 @@ async function deleteAccount(id) {
     return { error: e };
   }
 }
+
+// 출하지시서 등록 모달(입고)
+const shipPrdSelect = async (data) => {
+  const params = [data.REQ_ID];
+  let result = await mariadb.query("shipPrdSelect", params);
+  return result;
+};
+
+//출하지시서 등록 버튼
+
+const shipInsert = async (rows) => {
+  for (const row of rows) {
+    const params = [
+      row.REQ_ID,
+      row.CUS_ID,
+      row.PRD_LOT,
+      row.SHIP_ORDER_DATE,
+      row.SHIP_WRITER,
+      row.WR_NAME,
+      row.PRD_CODE,
+      row.PRD_NAME,
+      row.QTY,
+      row.D_DAY,
+    ];
+    await mariadb.query("shipInsert", params);
+  }
+  return { success: true };
+};
 
 module.exports = {
   addAccount,
@@ -163,4 +196,7 @@ module.exports = {
   reqSelect,
   updateReqStatus,
   deleteAccount,
+  shipModalSelect,
+  shipPrdSelect,
+  shipInsert,
 };

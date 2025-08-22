@@ -108,8 +108,6 @@ router.get("/shipSelect", async (req, res) => {
 
 module.exports = router;
 
-
-
 // 거래처 조회
 router.get("/marketing/getacclist", async (req, res) => {
   try {
@@ -133,7 +131,31 @@ router.delete("/marketing/deleteacc/:id", async (req, res) => {
   }
 });
 
+// 출하지시서등록 - 주문서모달
+router.get("/shipModalSelect", async (req, res) => {
+  let list = await marketingService.shipModalSelect();
+  res.send(list);
+});
 
+//출하지시서 - 입고 모달
+router.post("/shipPrdSelect", async (req, res) => {
+  try {
+    const data = req.body;
+    let result = await marketingService.shipPrdSelect(data);
+    res.json(result);
+  } catch (e) {
+    console.log(e);
+  }
+});
 
-
+// 출하 지시 등록 버튼
+router.post("/shipInsert", async (req, res) => {
+  try {
+    const data = req.body;
+    let result = await marketingService.shipInsert(data);
+    res.json(result);
+  } catch (e) {
+    console.log(e);
+  }
+});
 module.exports = router;
