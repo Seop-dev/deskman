@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const qualityService = require("../services/quality_service");
 
-// 합/불 원자재 젅부 조회
+// 합격불합격 원자재 조회
 router.get("/mathisall", async (req, res) => {
   let list = await qualityService.matHisAll();
   res.send(list);
@@ -24,9 +24,9 @@ router.get("/prdcertlist", async (req, res) => {
 router.post("/passmat", async (req, res) => {
   try {
     const body = req.body || {};
-    console.log("passprd body:", body);
+    console.log("passmat body:", body);
 
-    const result = await qualityService.addPassPrd(body);
+    const result = await qualityService.addPassMat(body);
 
     res.json({
       ok: true,
@@ -44,7 +44,6 @@ router.post("/passmat", async (req, res) => {
 router.post("/rjtmat", async (req, res) => {
   try {
     const body = req.body || {};
-
     const {
       RECEIPT_NO,
       MAT_CODE,
@@ -63,7 +62,7 @@ router.post("/rjtmat", async (req, res) => {
     });
     return res.json({ ok: true, affected: result.affectedRows ?? 0 });
   } catch (err) {
-    console.error("[/quality/rjtmat] ERROR:", err);
+    console.error("[/rjtmat] ERROR:", err);
     return res
       .status(500)
       .json({ ok: false, message: err.message, detail: String(err) });
@@ -82,7 +81,6 @@ router.post("/passprd", async (req, res) => {
     const b = req.body || {};
     const result = await qualityService.addPassPrd({
       TP_ID: String(b.TP_ID),
-      Q_STD_ID: String(b.Q_STD_ID),
       PRD_NAME: String(b.PRD_NAME),
       PRD_CODE: String(b.PRD_CODE),
       TOTAL_QTY: Number(b.TOTAL_QTY) || 0,
@@ -102,10 +100,46 @@ router.post("/passprd", async (req, res) => {
   }
 });
 
+// 불합격제품 등록
+router.post("/rejectprd", async (req, res) => {
+  try {
+    const b = req.body || {};
+    const r = await qualityService.addRejectPrd(b); // { ok:true, PRD_CERT_ID: '...' }
+    return res.status(201).json({ ok: true, prdCertId: r.PRD_CERT_ID });
+  } catch (e) {
+    console.error("[POST /rejectprd] error:", e);
+    return res.status(500).json({
+      ok: false,
+      message: "불합격 저장 실패",
+      error: String(e?.message || e),
+    });
+  }
+});
+
 // 품질기준 조회
 router.get("/qstdlist", async (req, res) => {
-  let list = await qualityService.selectQstd();
+  const list = await qualityService.selectQstd();
   res.send(list);
+});
+
+// 품질기준 변경 (POST)
+router.post("/qstdupdate", async (req, res) => {
+  try {
+    const result = await qualityService.updateQstd(req.body);
+
+    if (!result || (result.affectedRows ?? 0) === 0) {
+      return res.status(404).json({ ok: false, message: "대상 없음" });
+    }
+    res.json({ ok: true, affected: result.affectedRows });
+    console.log(req.body);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      ok: false,
+      message: err.sqlMessage || err.message,
+      code: err.code,
+    });
+  }
 });
 
 // 품질공통코드
