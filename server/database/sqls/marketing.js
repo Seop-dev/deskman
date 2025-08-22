@@ -15,7 +15,7 @@ const selectAccountList = `
     created_at   as createdAt,
     updated_at   as updatedAt
   from CUSTOMERS
-  where cus_use = 1
+  where cus_use in (0, 1)
   order by cus_id desc
 `;
 
@@ -159,11 +159,16 @@ const reqUpdateStatusByIdsCsv = `
  `;
 
 // 거래처 삭제
-const deleteAccount = `
-  DELETE FROM CUSTOMERS
-  WHERE CUS_ID=?
+const sqlList = {};
 
-`;
+sqlList.deleteAccount = (ids) => {
+  const placeholders = ids.map(() => "?").join(","); 
+  return {
+    sql: `DELETE FROM CUSTOMERS WHERE CUS_ID IN (${placeholders})`,
+    params: ids
+  };
+};
+
 // 출하지시서 주문서 조회 모달
 const shipModalSelect = `SELECT 
     r.REQ_ID,       -- 주문서 번호
@@ -224,7 +229,7 @@ module.exports = {
   reqDetailInsert,
   reqSelect,
   reqUpdateStatusByIdsCsv,
-  deleteAccount,
+  sqlList,
   shipModalSelect,
   shipPrdSelect,
   shipInsert,
