@@ -504,6 +504,16 @@ const wrShipUpdate = async (rows) => {
   return { success: true };
 };
 
+// 출하 - 출하버튼
+const wrShipUpdate2 = async (rows) => {
+  for (const row of rows) {
+    console.log(row);
+    const params = [row.QTY, row.PRD_NAME, row.PRD_LOT];
+    await mariadb.query("wrShipUpdate2", params);
+  }
+  return { success: true };
+};
+
 // 출하 - 운송업체 조회
 
 const wrDelivery = async () => {
@@ -622,4 +632,5 @@ module.exports = {
   wrDelete,
   wrModalDelete,
   wrModalInsert,
+  wrShipUpdate2,
 };

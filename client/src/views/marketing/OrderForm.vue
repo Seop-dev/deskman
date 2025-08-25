@@ -163,7 +163,7 @@ const modalList = async () => {
     }));
   } catch (e) {
     console.error(e);
-    $toast.error('거래처 데이터를 불러오지 못했습니다.');
+    $toast.error('거래처 데이터를 불러오지 못했습니다.', { position: 'top-right', duration: 1000 });
   }
 };
 
@@ -208,7 +208,7 @@ const modalList2 = async () => {
     }));
   } catch (e) {
     console.error(e);
-    $toast.error('제품 데이터를 불러오지 못했습니다.');
+    $toast.error('제품 데이터를 불러오지 못했습니다.', { position: 'top-right', duration: 1000 });
   }
 };
 
@@ -223,7 +223,7 @@ const itemModal = async (title, rowData, colData) => {
 
 const itemModalConfirm = (row) => {
   orderRow.value.unshift(row);
-  $toast.success('제품이 추가되었습니다.');
+  $toast.success('제품이 추가되었습니다.', { position: 'top-right', duration: 1000 });
 };
 
 /* 초기화 */
@@ -232,23 +232,23 @@ const reset = () => {
   orderRow.value = [];
   selectedAccount.value = null;
   selectedItem.value = null;
-  $toast.info('입력값이 초기화되었습니다.');
+  $toast.info('입력값이 초기화되었습니다.', { position: 'top-right', duration: 1000 });
 };
 
 /* 저장버튼 */
 const submit = async () => {
   if (!order.value.client || !order.value.dDay) {
-    $toast.warning('거래처와 납기일을 확인하세요.');
+    $toast.warning('거래처와 납기일을 확인하세요.', { position: 'top-right', duration: 1000 });
     return;
   }
   const selectedRows = gridApiMat.value.getSelectedRows();
   if (selectedRows.length === 0) {
-    $toast.warning('등록할 제품을 선택하세요.');
+    $toast.warning('등록할 제품을 선택하세요.', { position: 'top-right', duration: 1000 });
     return;
   }
   const invalidQty = selectedRows.some((row) => !row.주문수량 || row.주문수량 <= 0);
   if (invalidQty) {
-    $toast.warning('모든 제품의 수량을 입력해주세요.');
+    $toast.warning('모든 제품의 수량을 입력해주세요.', { position: 'top-right', duration: 1000 });
     return;
   }
 
@@ -262,7 +262,7 @@ const submit = async () => {
     };
     const res = await axios.post('http://localhost:3000/reqInsert', condition);
     if (!res.data?.success) {
-      $toast.error('주문서(헤더) 등록 실패');
+      $toast.error('주문서(헤더) 등록 실패', { position: 'top-right', duration: 1000 });
       return;
     }
     const reqId = res.data.reqId;
@@ -277,18 +277,18 @@ const submit = async () => {
     };
     const res2 = await axios.post('http://localhost:3000/reqDetailInsert', payload);
     if (!res2.data?.success) {
-      $toast.error('주문서(상세) 등록 실패');
+      $toast.error('주문서(상세) 등록 실패', { position: 'top-right', duration: 1000 });
       return;
     }
 
-    $toast.success(`주문서 등록완료 (번호: ${reqId})`);
+    $toast.success(`주문서 등록완료 (번호: ${reqId})`, { position: 'top-right', duration: 1000 });
 
     // 초기화
     order.value = { dDay: '', rDay: '', writer: '', client: '', client_code: '' };
     orderRow.value = [];
   } catch (e) {
     console.error(e);
-    $toast.error('주문서 등록 중 오류가 발생했습니다.');
+    $toast.error('주문서 등록 중 오류가 발생했습니다.', { position: 'top-right', duration: 1000 });
   }
 };
 </script>

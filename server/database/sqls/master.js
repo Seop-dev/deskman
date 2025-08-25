@@ -450,6 +450,11 @@ const wrShipUpdate = `UPDATE SHIPMENT
                       CAR_NO = ?
                       WHERE SHIP_NO = ? `;
 
+const wrShipUpdate2 = `UPDATE PRODUCT_RECEIPT
+                       SET RECEIVED_QTY = RECEIVED_QTY - ?
+                       WHERE PRD_CODE = (SELECT PRD_CODE FROM PRODUCT WHERE PRD_NAME = ?) 
+                         AND PRD_LOT = ?`;
+
 // 출하 지시서 운송사 조회
 const wrDelivery = `SELECT CUS_TYPE, CUS_NAME, CUS_MANAGER
 FROM CUSTOMERS
@@ -545,4 +550,5 @@ module.exports = {
   wrDelete,
   wrModalDelete,
   wrModalInsert,
+  wrShipUpdate2,
 };

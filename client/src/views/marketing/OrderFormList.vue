@@ -18,9 +18,6 @@
           <!--  :defaultColDef="{ width: 150 }" 로 전체 width지정도가능-->
         </ag-grid-vue>
         <br /><br />
-        <v-row justify="end">
-          <v-btn color="error" class="mr-6" @click="submitForm">주문취소</v-btn>
-        </v-row>
       </div>
     </div>
   </UiParentCard>
@@ -91,9 +88,9 @@ const reqSelect = async () => {
     제품명: r.PRD_NAME,
     주문수량: r.REQ_QTY,
     미납수량: r.YET_QTY,
-    납기일자: r.REQ_DDAY,
-    출하일자: r.LAST_SHIP_DATE ? r.LAST_SHIP_DATE.substring(10, 0) : null,
-    주문상태: r.REQ_STATUS
+    납기일자: r.REQ_DDAY ? r.REQ_DDAY.substring(0, 10) : null,
+    출하일자: r.LAST_SHIP_DATE ? r.LAST_SHIP_DATE.substring(0, 10) : null,
+    주문상태: r.YET_QTY === 0 ? '완료' : r.REQ_STATUS // ✅ 미납수량이 0이면 "완료"
   }));
   console.log(res);
 };

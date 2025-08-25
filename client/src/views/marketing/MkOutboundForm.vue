@@ -137,6 +137,7 @@ const materialColDefs = [
   { field: '거래처', headerName: '거래처', flex: 1 },
   { field: '제품명', headerName: '제품명', flex: 1 },
   { field: '주문수량', headerName: '주문수량', flex: 1 },
+  { field: '미납수량', headerName: '미납수량', flex: 1 },
   { field: '납기일자', headerName: '납기일자', flex: 1 }
 ];
 const materialRowData = ref([]);
@@ -150,6 +151,7 @@ const modalList = async () => {
     거래처: prd.CUS_ID,
     제품명: prd.PRD_NAME,
     주문수량: prd.REQ_QTY,
+    미납수량: prd.YET_QTY,
     납기일자: prd.REQ_DDAY ? prd.REQ_DDAY.substring(0, 10) : null
   }));
   console.log(res);

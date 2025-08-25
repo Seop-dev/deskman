@@ -163,19 +163,27 @@ const deleteAccount = `DELETE FROM CUSTOMERS WHERE CUS_ID IN (?)`;
 
 // 출하지시서 주문서 조회 모달
 const shipModalSelect = `SELECT 
-    r.REQ_ID,       -- 주문서 번호
-    r.REQ_DATE,     -- 주문일자
-    r.CUS_ID,       -- 거래처 ID
-    p.PRD_NAME,     -- 제품명 (추가)
-    d.REQ_QTY,      -- 주문 수량
-    r.REQ_DDAY      -- 납기일
+    r.REQ_ID,                                         -- 주문서 번호
+    DATE_FORMAT(r.REQ_DATE, '%Y-%m-%d') AS REQ_DATE,  -- 주문일자
+    r.CUS_ID,                                         -- 거래처 ID
+    p.PRD_NAME,                                       -- 제품명
+    d.REQ_QTY,                                        -- 주문 수량
+    COALESCE(s.SHIP_QTY, 0) AS SHIP_QTY,              -- 출하 수량
+    (d.REQ_QTY - COALESCE(s.SHIP_QTY, 0)) AS YET_QTY, -- 미납 수량
+    DATE_FORMAT(r.REQ_DDAY, '%Y-%m-%d') AS REQ_DDAY   -- 납기일
 FROM CUSTOMER_REQUEST AS r
 JOIN REQUEST_DETAIL AS d
     ON r.REQ_ID = d.REQ_ID
 JOIN PRODUCT AS p
     ON d.PRD_CODE = p.PRD_CODE
-ORDER BY REQ_DATE DESC
-`;
+LEFT JOIN (
+    SELECT REQ_ID, PRD_CODE, SUM(QTY) AS SHIP_QTY
+    FROM SHIPMENT
+    GROUP BY REQ_ID, PRD_CODE
+) s
+    ON s.REQ_ID = d.REQ_ID 
+   AND s.PRD_CODE = d.PRD_CODE
+ORDER BY r.REQ_DATE DESC`;
 
 // 입고제품 모달 조회.
 const shipPrdSelect = `SELECT 

@@ -152,8 +152,15 @@ const scrap = async () => {
     CAR_NO: r.차량번호,
     SHIP_NO: r.출하번호
   }));
+  const payload2 = selectedRows.map((r) => ({
+    QTY: r.출하수량,
+    PRD_NAME: r.제품명,
+    PRD_LOT: r.LOT번호
+  }));
   const res = await axios.post('http://localhost:3000/wrShipUpdate', payload);
+  const res2 = await axios.post('http://localhost:3000/wrShipUpdate2', payload2);
   console.log(res);
+  console.log(res2);
   alert('출하 처리가 완료되었습니다.');
   //화면 반영
   wrShip();
