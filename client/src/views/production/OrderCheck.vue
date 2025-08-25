@@ -1,5 +1,4 @@
 <!-- src/views/production/OrderCheck.vue -->
-<!-- commit -->
 <template>
   <BaseBreadcrumb :title="page.title" :breadcrumbs="breadcrumbs" />
 
@@ -38,13 +37,12 @@
 
 <script setup>
 import { ref, shallowRef, computed, onMounted } from 'vue';
-import axios from 'axios';
 import { useRouter } from 'vue-router';
 import BaseBreadcrumb from '@/components/shared/BaseBreadcrumb.vue';
 import UiParentCard from '@/components/shared/UiParentCard.vue';
 import { AgGridVue } from 'ag-grid-vue3';
+import http from '@/lib/http'; // ✅ 공용 HTTP 인스턴스
 
-const API = import.meta?.env?.VITE_API_URL;
 const router = useRouter();
 
 const page = ref({ title: '작업지시 조회' });
@@ -62,7 +60,8 @@ const PAGE_SIZE = 10;
 async function fetchOrders() {
   const kw = (search.value.issueNumber || search.value.orderName || search.value.productCode || search.value.contact || '').trim();
   try {
-    const { data } = await axios.get(`${API}/workorders`, { params: { kw, page: 1, size: 300 } });
+    // ✅ 절대 경로로 /api 사용 (Nginx/Vite 프록시가 백엔드로 전달)
+    const { data } = await http.get('/api/workorders', { params: { kw, page: 1, size: 300 } });
     if (data?.ok) {
       orders.value = (data.rows || []).map((r) => ({
         id: r.id,
@@ -77,9 +76,12 @@ async function fetchOrders() {
         status: r.status || 'OPEN',
         memo: r.memo || ''
       }));
+    } else {
+      orders.value = [];
     }
   } catch (e) {
     console.error(e);
+    orders.value = [];
   }
 }
 onMounted(fetchOrders);

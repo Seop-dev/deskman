@@ -38,8 +38,6 @@
         <v-col cols="12" md="6">
           <v-text-field label="설비코드" v-model="form.code" dense outlined readonly />
           <v-text-field label="설비명" v-model="form.name" dense outlined />
-
-          <!-- 설비유형: 코드/라벨 매핑용 v-select -->
           <v-select
             label="설비유형"
             v-model="form.type"
@@ -51,7 +49,6 @@
             clearable
             placeholder="설비유형 선택"
           />
-
           <v-text-field label="제조사" v-model="form.manufacturer" dense outlined />
         </v-col>
 
@@ -90,23 +87,26 @@ import { useToast } from 'vue-toast-notification';
 import 'vue-toast-notification/dist/theme-bootstrap.css';
 
 const $toast = useToast();
-
 ModuleRegistry.registerModules([AllCommunityModule]);
 const quartz = themeQuartz;
 
-/* API */
-const API_BASE = import.meta?.env?.VITE_API_URL;
-const LIST_URL = `${API_BASE}/facility`; // 설비 기본 목록
-const UPDATE_URL = `${API_BASE}/facilityUpdate`;
-const PROCESS_API = `${API_BASE}/process`;
-const CODES_FC = `${API_BASE}/common/codes/FC`; // 설비유형 코드/라벨
+/* axios 인스턴스: 환경변수 baseURL 사용 */
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_BASE_URL || ''
+});
+
+/* API 상대경로 */
+const LIST_URL = '/facility'; // 설비 기본 목록
+const UPDATE_URL = '/facilityUpdate';
+const PROCESS_API = '/process';
+const CODES_FC = '/common/codes/FC'; // 설비유형 코드/라벨
 
 /* 코드 라벨 맵/아이템 */
 const FC_LABEL = ref({});
 const fcItems = ref([]);
 const buildLabelMap = (rows) => (Array.isArray(rows) ? rows : []).reduce((m, r) => ((m[r.code] = r.code_name ?? r.code), m), {});
 const preloadFC = async () => {
-  const { data } = await axios.get(CODES_FC);
+  const { data } = await api.get(CODES_FC);
   fcItems.value = Array.isArray(data) ? data : [];
   FC_LABEL.value = buildLabelMap(fcItems.value);
 };
@@ -128,7 +128,7 @@ const applyProcessFilter = (procCode) => {
   gridApi.value.onFilterChanged();
 };
 
-/* 목록 컬럼: 설비유형은 라벨 표시 */
+/* 목록 컬럼 */
 const rows = ref([]);
 const columnDefs = ref([
   { field: '공정코드', hide: true, filter: 'agTextColumnFilter' },
@@ -157,7 +157,7 @@ const mapRow = (r) => ({
   공정코드: r.PR_ID ?? '',
   설비코드: r.FAC_ID ?? '',
   설비명: r.FAC_NAME ?? '',
-  FAC_TYPE: r.FAC_TYPE ?? '', // 코드 저장
+  FAC_TYPE: r.FAC_TYPE ?? '',
   사용유무: (r.FAC_USE ?? 1) === 1 ? '사용' : '정지',
   제조사: r.FAC_COMPANY ?? '',
   설비등록일: fmtDate(r.FAC_MDATE),
@@ -169,7 +169,7 @@ const mapRow = (r) => ({
 
 /* 목록 */
 const fetchList = async () => {
-  const { data } = await axios.get(LIST_URL);
+  const { data } = await api.get(LIST_URL);
   rows.value = (Array.isArray(data) ? data : []).map(mapRow);
   if (processCode.value) applyProcessFilter(processCode.value);
 };
@@ -178,7 +178,7 @@ const fetchList = async () => {
 const form = reactive({
   code: '',
   name: '',
-  type: '', // <- 코드 값
+  type: '',
   useYn: '',
   manufacturer: '',
   registeredAt: '',
@@ -230,7 +230,7 @@ const saveEdit = async () => {
   };
 
   try {
-    const res = await axios.put(UPDATE_URL, payload, { headers: { 'Content-Type': 'application/json' } });
+    const res = await api.put(UPDATE_URL, payload, { headers: { 'Content-Type': 'application/json' } });
     if (res.status === 200) {
       $toast.success('수정 되었습니다', { position: 'top-right', duration: 1000 });
       await fetchList();
@@ -265,7 +265,7 @@ const mapProcess = (r) => ({
   비고: r.PRC_NOTE ?? ''
 });
 const fetchProcessList = async () => {
-  const { data } = await axios.get(PROCESS_API);
+  const { data } = await api.get(PROCESS_API);
   return (Array.isArray(data) ? data : []).map(mapProcess);
 };
 const openModal = async (title) => {

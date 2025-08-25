@@ -75,12 +75,13 @@ const $toast = useToast();
 const authStore = useAuthStore();
 const router = useRouter();
 
-const http = axios.create({
-  baseURL: import.meta?.env?.VITE_API_URL,
+/* ✅ axios 인스턴스: 환경변수 기반 baseURL */
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_BASE || '',
   headers: { 'Content-Type': 'application/json' }
 });
 
-// 엔드포인트 모음
+/* ✅ 엔드포인트 (상대경로만 유지) */
 const EP = {
   nextId: '/facility/next-id',
   codesFC: '/common/codes/FC',
@@ -88,15 +89,9 @@ const EP = {
   list: '/facility'
 };
 
-const apiTry = async (method, path, data = null) => {
-  try {
-    return await http.request({ method, url: '/api' + path, data });
-  } catch (e) {
-    if (e?.response?.status === 404) {
-      return await http.request({ method, url: path, data });
-    }
-    throw e;
-  }
+/* 공통 호출 */
+const apiTry = async (method, path, data = null, config = {}) => {
+  return await api.request({ method, url: path, data, ...config });
 };
 
 const form = reactive({
