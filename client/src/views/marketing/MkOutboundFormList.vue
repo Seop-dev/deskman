@@ -71,7 +71,7 @@ onMounted(() => {
 
 // 출하이력 리스트
 const shipList = async () => {
-  const res = await axios.get('http://localhost:3000/shipSelect');
+  const res = await axios.get('/shipSelect');
   rowData1.value = res.data.map((emp) => ({
     출하번호: emp.SHIP_NO,
     주문번호: emp.REQ_ID,

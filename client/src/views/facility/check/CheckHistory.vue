@@ -50,7 +50,7 @@ import { useToast } from 'vue-toast-notification';
 import 'vue-toast-notification/dist/theme-bootstrap.css';
 const $toast = useToast();
 
-const apiBase = 'http://localhost:3000';
+const apiBase = import.meta?.env?.VITE_API_URL || 'http://localhost:3000';
 
 const columnDefs = ref([
   { field: '설비코드', flex: 1 },

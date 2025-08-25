@@ -99,7 +99,7 @@ const specRows = ref([]);
 // 품질기준 데이터 가져오기
 const getQStandardList = async () => {
   try {
-    const url = 'http://localhost:3000/prdqstd';
+    const url = '/prdqstd';
     const result = await axios.get(url);
 
     if (result.data && result.data.length > 0) {

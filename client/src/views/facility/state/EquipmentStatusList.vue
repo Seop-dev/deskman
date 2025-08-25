@@ -49,7 +49,7 @@ const $toast = useToast();
 ModuleRegistry.registerModules([AllCommunityModule]);
 const quartz = themeQuartz;
 
-const apiBase = 'http://localhost:3000';
+const apiBase = import.meta?.env?.VITE_API_URL || 'http://localhost:3000';
 const PROCESS_API = `${apiBase}/process`;
 
 // 설비유형 코드 라벨 맵

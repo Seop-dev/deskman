@@ -97,7 +97,7 @@ const openModal = async (title) => {
   modalColDefs.value = materialColDefs;
 
   try {
-    const res = await axios.get('http://localhost:3000/materials');
+    const res = await axios.get('/materials');
     modalRowData.value = res.data.map((mat) => ({
       자재코드: mat.MAT_CODE,
       자재명: mat.MAT_NAME,
@@ -167,7 +167,7 @@ async function submitForm() {
     }));
 
     // 3. POST 요청
-    await axios.post('http://localhost:3000/material/order/insert', {
+    await axios.post('/material/order/insert', {
       orderData,
       detailList
     });

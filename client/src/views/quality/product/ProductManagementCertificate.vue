@@ -287,7 +287,7 @@ async function saveForm() {
       };
 
       console.log('[saveForm] POST /passprd', payload);
-      const response = await axios.post('http://localhost:3000/passprd', payload);
+      const response = await axios.post('/passprd', payload);
 
       if (response.data.ok) {
         $toast.info('합격 제품이 등록되었습니다', { position: 'top-right', duration: 1000 });
@@ -308,7 +308,7 @@ async function saveForm() {
       };
 
       console.log('[saveForm] POST /rejectprd', payload);
-      const response = await axios.post('http://localhost:3000/rejectprd', payload);
+      const response = await axios.post('/rejectprd', payload);
 
       if (response.data.ok) {
         $toast.info('불합격 제품이 등록되었습니다', { position: 'top-right', duration: 1000 });

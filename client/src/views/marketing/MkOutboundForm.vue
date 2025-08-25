@@ -100,7 +100,7 @@ const modalKey1 = ref(0);
 const fetchCommonCodes = async () => {
   try {
     // 부서 공통코드 API 호출 (예시)
-    const authRes = await axios.get('http://localhost:3000/wrNameSelect');
+    const authRes = await axios.get('/wrNameSelect');
     wrOptions.value = authRes.data.map((item) => item.WR_NAME); // `code_name`을 배열에 담기
   } catch (error) {
     console.error('공통코드 데이터를 불러오는 데 실패했습니다:', error);
@@ -144,7 +144,7 @@ const materialRowData = ref([]);
 
 // 모달 조회
 const modalList = async () => {
-  const res = await axios.get('http://localhost:3000/shipModalSelect');
+  const res = await axios.get('/shipModalSelect');
   materialRowData.value = res.data.map((prd) => ({
     주문서번호: prd.REQ_ID,
     주문일자: prd.REQ_DATE,
@@ -189,7 +189,7 @@ const openModal1 = async (title) => {
   }
   console.log('hi');
   const condition = { REQ_ID: form.order };
-  const res = await axios.post('http://localhost:3000/shipPrdSelect', condition);
+  const res = await axios.post('/shipPrdSelect', condition);
   materialRowData1.value = res.data.map((prd) => ({
     LOT번호: prd.PRD_LOT,
     제품코드: prd.PRD_CODE,
@@ -270,7 +270,7 @@ async function submitForm() {
     D_DAY: form.dueDate
   }));
   // 랏번호는 노드에서 진행
-  const res = await axios.post('http://localhost:3000/shipInsert', payload);
+  const res = await axios.post('/shipInsert', payload);
   console.log(res);
   $toast.success('등록완료', { position: 'top-right', duration: 1000 });
 }

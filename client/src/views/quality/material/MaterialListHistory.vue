@@ -156,7 +156,7 @@ const gridOptions = ref<GridOptions<Row>>({
 const getMatHisAll = async () => {
   try {
     loading.value = true;
-    const result = await axios.get('http://localhost:3000/mathisall');
+    const result = await axios.get('/mathisall');
 
     console.log('result data는 => ', result.data);
 

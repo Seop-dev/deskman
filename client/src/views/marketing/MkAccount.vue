@@ -160,7 +160,7 @@ const submitForm = async () => {
   };
   console.log(addAcc);
   try {
-    const { data } = await axios.post('http://localhost:3000/marketing/insertacc', addAcc);
+    const { data } = await axios.post('/marketing/insertacc', addAcc);
     if (data.affectedRows > 0) {
       await loadPartners();
       toast('성공적으로 등록되었습니다.', 'success');
@@ -199,7 +199,7 @@ const colDefs2 = ref([
 // ======================================================
 onMounted(() => loadPartners());
 async function loadPartners() {
-  const res = await axios.get('http://localhost:3000/marketing/getacclist');
+  const res = await axios.get('/marketing/getacclist');
   console.log('서버 응답:', res.data);
   rowData2.value = Array.isArray(res.data) ? res.data : (res.data.data ?? []);
 }
@@ -215,7 +215,7 @@ const deleteSelected = async () => {
 
   try {
     const ids = selectedRows.map((r) => r.cusId);
-    const { data } = await axios.delete('http://localhost:3000/deleteAccount', {
+    const { data } = await axios.delete('/deleteAccount', {
       data: { ids }
     });
     // console.log('삭제할 ids:', ids);

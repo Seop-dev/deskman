@@ -131,7 +131,7 @@ const breadcrumbs = shallowRef([
 
 // 제품 리스트
 const prcList = async () => {
-  const res = await axios.get('http://localhost:3000/masterPrcSelect');
+  const res = await axios.get('/masterPrcSelect');
   console.log(res);
   rowData1.value = res.data.map((prd) => ({
     공정코드: prd.PRC_CODE,
@@ -175,7 +175,7 @@ const submitForm = async () => {
         PRC_NOTE: form.value.note,
         PRC_CODE: form.value.prcCode
       };
-      await axios.post('http://localhost:3000/masterPrcUpdate', updateRow);
+      await axios.post('/masterPrcUpdate', updateRow);
       $toast.success('공정이 수정되었습니다.', { position: 'top-right', duration: 1000 });
       await prcList();
     } else {
@@ -187,7 +187,7 @@ const submitForm = async () => {
         PRC_RDATE: form.value.date,
         PRC_NOTE: form.value.note
       };
-      await axios.post('http://localhost:3000/masterPrcInsert', newRow);
+      await axios.post('/masterPrcInsert', newRow);
       $toast.success('공정이 등록되었습니다.', { position: 'top-right', duration: 1000 });
       await prcList();
     }
@@ -203,7 +203,7 @@ const del = async () => {
     return;
   }
   try {
-    await axios.post('http://localhost:3000/masterPrcDelete', { PRC_CODE: form.value.prcCode });
+    await axios.post('/masterPrcDelete', { PRC_CODE: form.value.prcCode });
     $toast.success(`${form.value.prcName}(이)가 삭제되었습니다.`, { position: 'top-right', duration: 1000 });
 
     resetForm();
@@ -220,7 +220,7 @@ const searchData = async () => {
     return;
   }
   const condition = { PRC_NAME: searchKeyword.value };
-  const res = await axios.post('http://localhost:3000/masterPrcSearch', condition);
+  const res = await axios.post('/masterPrcSearch', condition);
   rowData1.value = res.data.map((prd) => ({
     공정코드: prd.PRC_CODE,
     공정명: prd.PRC_NAME,
@@ -268,7 +268,7 @@ const materialRowData = ref([]);
 
 // 모달 조회
 const modalList = async () => {
-  const res = await axios.get('http://localhost:3000/masterPrcModal');
+  const res = await axios.get('/masterPrcModal');
   materialRowData.value = res.data.map((prd) => ({
     그룹코드: prd.group_code,
     설비유형: prd.code_name,

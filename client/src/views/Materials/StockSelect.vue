@@ -52,7 +52,7 @@ watch(
     const selectedType = materialTypeMap[newVal];
 
     try {
-      const res = await axios.get('http://localhost:3000/stockSelect', {
+      const res = await axios.get('/stockSelect', {
         params: { matType: selectedType }
       });
       console.log(res.data);

@@ -67,7 +67,7 @@ const rowData = ref([]);
 
 const getTaskPrd = async () => {
   try {
-    const { data } = await axios.get('http://localhost:3000/taskprd');
+    const { data } = await axios.get('/taskprd');
     rowData.value = Array.isArray(data) ? data : [];
   } catch (err) {
     console.error('데이터 로드 실패:', err);

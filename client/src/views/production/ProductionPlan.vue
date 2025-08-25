@@ -133,7 +133,7 @@ import BaseBreadcrumb from '@/components/shared/BaseBreadcrumb.vue';
 import UiParentCard from '@/components/shared/UiParentCard.vue';
 import { AgGridVue } from 'ag-grid-vue3';
 
-const API = 'http://localhost:3000';
+const API = import.meta?.env?.VITE_API_URL || 'http://localhost:3000';
 
 /* 헤더 */
 const pageMeta = ref({ title: '생산계획 관리' });

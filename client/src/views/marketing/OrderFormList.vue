@@ -79,7 +79,7 @@ const breadcrumbs = shallowRef([
 ]);
 
 const reqSelect = async () => {
-  const res = await axios.get('http://localhost:3000/reqSelect');
+  const res = await axios.get('/reqSelect');
   rowData1.value = res.data.map((r) => ({
     주문일자: r.REQ_DATE,
     주문번호: r.REQ_ID,

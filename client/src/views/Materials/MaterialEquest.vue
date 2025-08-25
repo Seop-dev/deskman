@@ -117,7 +117,7 @@ const openModal = async (title) => {
   modalColDefs.value = materialColDefs;
 
   try {
-    const res = await axios.get('http://localhost:3000/failMaterials');
+    const res = await axios.get('/failMaterials');
     modalRowData.value = res.data
       .filter((mat) => mat.MAT_STATUS !== '완료')
       .map((mat) => ({
@@ -188,7 +188,7 @@ async function submitForm() {
     }));
 
     // 3. POST 요청
-    await axios.post('http://localhost:3000/return/request/insert', {
+    await axios.post('/return/request/insert', {
       requestData,
       detailList
     });

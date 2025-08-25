@@ -56,10 +56,10 @@ import 'vue-toast-notification/dist/theme-bootstrap.css';
 const $toast = useToast();
 
 /* ─ API ─ */
-const API_FAC_STATUS = 'http://localhost:3000/facility/status';
-const API_PROCESS = 'http://localhost:3000/process';
-const API_CODES_FC = 'http://localhost:3000/common/codes/FC';
-const API_CODES_RR = 'http://localhost:3000/common/codes/RR';
+const API_FAC_STATUS = '/facility/status';
+const API_PROCESS = '/process';
+const API_CODES_FC = '/common/codes/FC';
+const API_CODES_RR = '/common/codes/RR';
 
 /* ─ 상태 ─ */
 const processCode = ref('');

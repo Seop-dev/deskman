@@ -78,7 +78,7 @@ onMounted(() => {
 const fetchCommonCodes = async () => {
   try {
     // 부서 공통코드 API 호출 (예시)
-    const authRes = await axios.get('http://localhost:3000/wrNameSelect');
+    const authRes = await axios.get('/wrNameSelect');
     wrOptions.value = authRes.data.map((item) => item.WR_NAME); // `code_name`을 배열에 담기
   } catch (error) {
     console.error('공통코드 데이터를 불러오는 데 실패했습니다:', error);
@@ -138,7 +138,7 @@ const openModal = async (title) => {
   modalTitle.value = title;
   modalColDefs.value = materialColDefs;
 
-  const res = await axios.get('http://localhost:3000/materials/order/select');
+  const res = await axios.get('/materials/order/select');
   modalRowData.value = res.data
     .filter((item) => item.PO_STATUS !== '완료')
     .map((item) => ({
@@ -208,7 +208,7 @@ async function submitForm() {
       const status = row.자재유형 == '원자재' ? '검수 대기' : '완료';
 
       // 1) MAT_IN_TMP에 등록
-      await axios.post('http://localhost:3000/materialInsert', {
+      await axios.post('/materialInsert', {
         PO_NO: form.issueNumber,
         RECEIPT_DATE: form.insertDate,
         SUPPLYER: form.name,
@@ -221,7 +221,7 @@ async function submitForm() {
 
       // 2) 부자재만 MATERIAL_RECEIPT에 등록
       if (row.자재유형 && row.자재유형 !== '원자재') {
-        await axios.post('http://localhost:3000/LOTInsert', {
+        await axios.post('/LOTInsert', {
           MAT_CODE: row.자재코드,
           MANAGER: form.manager,
           MAT_QTY: row.입고수량,

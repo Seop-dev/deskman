@@ -149,7 +149,7 @@ onMounted(() => {
 
 // 제품 조회
 const prdList = async () => {
-  const res = await axios.get('http://localhost:3000/diaPrdList');
+  const res = await axios.get('/diaPrdList');
   rowData1.value = res.data.map((prd) => ({
     제품명: prd.PRD_NAME,
     제품코드: prd.PRD_CODE,
@@ -163,7 +163,7 @@ const prdList = async () => {
 // 공정 조회
 const prcList = async () => {
   if (!form.value.diagram) return;
-  const res = await axios.post('http://localhost:3000/prcList', { DIA_CODE: form.value.diagram });
+  const res = await axios.post('/prcList', { DIA_CODE: form.value.diagram });
   prcData.value = res.data.map((prd) => ({
     공정순서: prd.PRC_ORDER,
     공정코드: prd.PRC_CODE,
@@ -196,7 +196,7 @@ const submitForm = async () => {
   }
 
   const prdCode = selectedRows.map((r) => r.제품코드);
-  await axios.post('http://localhost:3000/diaInsert', { 제품코드: prdCode, 작성자: form.value.writer, 등록일: form.value.addDate });
+  await axios.post('/diaInsert', { 제품코드: prdCode, 작성자: form.value.writer, 등록일: form.value.addDate });
   $toast.success('등록 성공', { position: 'top-right', duration: 1000 });
   prdList();
 };
@@ -222,7 +222,7 @@ const del = async () => {
   }
   if (!confirm('공정을 삭제하시겠습니까?')) return;
   const prcCode = selectedRows.map((r) => r.공정코드);
-  await axios.post('http://localhost:3000/prcDelete', { diaCode: form.value.diagram, prcCode });
+  await axios.post('/prcDelete', { diaCode: form.value.diagram, prcCode });
   prcList();
 };
 
@@ -232,13 +232,13 @@ const onRowDragEnd = async () => {
   gridApiMat.value.forEachNode((node, index) => {
     updatedData.push({ DIA_CODE: form.value.diagram, PRC_CODE: node.data.공정코드, PRC_ORDER: index + 1 });
   });
-  await axios.post('http://localhost:3000/updateProcessOrder', updatedData);
+  await axios.post('/updateProcessOrder', updatedData);
   prcList();
 };
 
 // 모달 조회
 const modalList = async () => {
-  const res = await axios.get('http://localhost:3000/diaModalList');
+  const res = await axios.get('/diaModalList');
   materialRowData.value = res.data.map((prd) => ({
     공정코드: prd.PRC_CODE,
     공정명: prd.PRC_NAME,
@@ -265,7 +265,7 @@ const modalConfirm = async (selectedRow) => {
     $toast.info('등록된 공정입니다.', { position: 'top-right', duration: 1000 });
     return;
   }
-  await axios.post('http://localhost:3000/prcModalConfirm', {
+  await axios.post('/prcModalConfirm', {
     DIA_CODE: form.value.diagram,
     PRC_CODE: selectedRow.공정코드,
     PRC_NAME: selectedRow.공정명,
@@ -280,7 +280,7 @@ const onCellValueChanged = (event) => console.log(event.value);
 // 검색
 const searchKeyword = ref('');
 const searchData = async () => {
-  const res = await axios.post('http://localhost:3000/diaPrdSearch', { PRD_NAME: searchKeyword.value });
+  const res = await axios.post('/diaPrdSearch', { PRD_NAME: searchKeyword.value });
   rowData1.value = res.data.map((prd) => ({
     제품명: prd.PRD_NAME,
     제품코드: prd.PRD_CODE,

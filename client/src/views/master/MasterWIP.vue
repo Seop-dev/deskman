@@ -123,11 +123,11 @@ const breadcrumbs = shallowRef([
 const unitOptions = ref([]);
 const typeOptions = ref([]);
 const unitList = async () => {
-  const res = await axios.get('http://localhost:3000/masterWIPUnit');
+  const res = await axios.get('/masterWIPUnit');
   unitOptions.value = res.data.map((prd) => prd.code_name);
 };
 const typeList = async () => {
-  const res = await axios.get('http://localhost:3000/masterWIPType');
+  const res = await axios.get('/masterWIPType');
   typeOptions.value = res.data.map((prd) => prd.code_name);
 };
 
@@ -144,7 +144,7 @@ const materialColDefs = [
 const materialRowData = ref([]);
 // 모달 조회
 const modalList = async () => {
-  const res = await axios.get('http://localhost:3000/masterWIPModal');
+  const res = await axios.get('/masterWIPModal');
   materialRowData.value = res.data.map((prd) => ({
     그룹코드: prd.group_code,
     규격: prd.code_name,
@@ -171,7 +171,7 @@ onMounted(() => {
 });
 
 const wipList = async () => {
-  const res = await axios.get('http://localhost:3000/masterWIPSelect');
+  const res = await axios.get('/masterWIPSelect');
   rowData1.value = res.data.map((prd) => ({
     재공품코드: prd.WIP_CODE,
     재공품명: prd.WIP_NAME,
@@ -202,7 +202,7 @@ const submitForm = async () => {
       WIP_WRITER: form.value.writer,
       WIP_CODE: form.value.wipCode
     };
-    await axios.post('http://localhost:3000/masterWIPUpdate', updateRow);
+    await axios.post('/masterWIPUpdate', updateRow);
     $toast.success('재공품이 수정되었습니다.', { position: 'top-right', duration: 1000 });
   } else {
     const newRow = {
@@ -214,7 +214,7 @@ const submitForm = async () => {
       WIP_NOTE: form.value.note,
       WIP_WRITER: form.value.writer
     };
-    await axios.post('http://localhost:3000/masterWIPInsert', newRow);
+    await axios.post('/masterWIPInsert', newRow);
     $toast.success('재공품이 등록되었습니다.', { position: 'top-right', duration: 1000 });
   }
 
@@ -232,7 +232,7 @@ const del = async () => {
 
   const wipCode = selectedRows.map((r) => r.재공품코드);
   console.log(wipCode);
-  await axios.post('http://localhost:3000/masterWIPDelete', { WIP_CODE: wipCode });
+  await axios.post('/masterWIPDelete', { WIP_CODE: wipCode });
   await wipList();
   $toast.success(`${selectedRows.map((r) => r.재공품명)}(이)가 삭제되었습니다.`, { position: 'top-right', duration: 1000 });
 };
@@ -280,7 +280,7 @@ const searchData = async () => {
     return;
   }
   const condition = { WIP_NAME: searchKeyword.value };
-  const res = await axios.post('http://localhost:3000/masterWIPSearch', condition);
+  const res = await axios.post('/masterWIPSearch', condition);
   rowData1.value = res.data.map((prd) => ({
     재공품코드: prd.WIP_CODE,
     재공품명: prd.WIP_NAME,

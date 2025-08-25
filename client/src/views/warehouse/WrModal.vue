@@ -69,7 +69,7 @@ const del = async () => {
   if (window.confirm(`${selectedRows[0].창고명} 를 삭제하시겠습니까?`)) {
     try {
       internalRowData.value = internalRowData.value.filter((row) => row.창고번호 !== selectedRows[0].창고번호);
-      await axios.post('http://localhost:3000/wrModalDelete', deleteRow);
+      await axios.post('/wrModalDelete', deleteRow);
       $toast.success('삭제 완료', { position: 'top-right', duration: 1000 });
       emit('deleted');
     } catch {
@@ -125,7 +125,7 @@ const update = async () => {
     WR_ADDR: selectedRows[0].창고주소,
     WR_NAME: selectedRows[0].창고명
   };
-  const result = await axios.post('http://localhost:3000/wrModalInsert', newRow);
+  const result = await axios.post('/wrModalInsert', newRow);
   console.log(result.config.data);
 };
 
