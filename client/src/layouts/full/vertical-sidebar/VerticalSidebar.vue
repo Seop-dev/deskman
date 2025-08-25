@@ -18,7 +18,7 @@ const userAuth = computed(() => authStore.user?.auth ?? '일반사원'); // 기�
 
 // ✅ 재귀 필터: 권한 체크 + 자식도 필터 + 빈 섹션 숨김(링크/자식 둘 다 없으면 제거)
 // 원본 sidebarItems를 건드리지 않도록 복사본에 처리
-function filterAndPrune(items, role) {
+function filterAndPrune(items: any, role: any) {
   const result = [];
   for (const it of items) {
     const allowed = !it.auth || it.auth.includes(role);

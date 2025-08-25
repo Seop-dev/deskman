@@ -1,0 +1,1 @@
+import{x as e,c as a,w as t,N as o,o as s,a as n,A as r,R as c}from"./index-CGGVM91c.js";const f=e({__name:"BlankLayout",setup(p){return(u,_)=>(s(),a(o,null,{default:t(()=>[n(r(c))]),_:1}))}});export{f as default};

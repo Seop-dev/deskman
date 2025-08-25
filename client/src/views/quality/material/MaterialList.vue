@@ -21,12 +21,15 @@
           clearable
         />
       </v-col>
-      <!-- 버튼 -->
-      <v-col justify="end" class="mb-2">
+      <v-col cols="3">
         <!-- 검색 버튼 추가 -->
         <v-btn color="primary" variant="elevated" @click="searchData">검색</v-btn>
-        <v-btn color="error" @click="resetForm">초기화</v-btn>
       </v-col>
+    </v-row>
+
+    <!-- 버튼 -->
+    <v-row justify="end" class="mb-4">
+      <v-btn color="error" variant="elevated" @click="resetForm">초기화</v-btn>
     </v-row>
 
     <ag-grid-vue
@@ -47,7 +50,15 @@ import BaseBreadcrumb from '@/components/shared/BaseBreadcrumb.vue';
 import UiParentCard from '@/components/shared/UiParentCard.vue';
 import { ref, shallowRef, reactive, computed, type Ref, onMounted } from 'vue';
 import { AgGridVue } from 'ag-grid-vue3';
-import { AllCommunityModule, ModuleRegistry, themeQuartz, type ColDef, PaginationModule, type GridOptions } from 'ag-grid-community';
+import {
+  AllCommunityModule,
+  ModuleRegistry,
+  themeQuartz,
+  type ColDef,
+  PaginationModule,
+  type GridOptions,
+  type RowClickedEvent
+} from 'ag-grid-community';
 
 ModuleRegistry.registerModules([AllCommunityModule, PaginationModule]);
 const quartz = themeQuartz;
@@ -81,22 +92,25 @@ interface Row {
   materialCode: string;
   receivedQty: number;
   matStatus: string;
+  materialName?: string; // ← 추가
+  currentUserName?: string; // ← 추가
 }
-
 const rowData: Ref<Row[]> = ref([]);
 
 // 행 클릭 이벤트 핸들러
-const onRowClicked = (e) => {
+const onRowClicked = (e: RowClickedEvent<Row>) => {
   const r = e.data;
+  if (!r) return; // 타입/안전 가드
+
   router.push({
-    path: '/qm/matmng', // 폼 페이지
+    path: '/qm/matmng',
     query: {
-      receiptNo: r.receiptNo, // 'MCERT001' 식
-      matCode: r.materialCode, // 자재코드
-      totalQty: String(r.receivedQty), // 총수량
-      inDate: r.receiptDate, // 입고일자 YYYY-MM-DD
-      materialName: r.materialName || '', // 있다면
-      createdBy: r.currentUserName
+      receiptNo: r.receiptNo,
+      matCode: r.materialCode,
+      totalQty: String(r.receivedQty),
+      inDate: r.receiptDate,
+      materialName: r.materialName || '',
+      createdBy: r.currentUserName || ''
     }
   });
 };
@@ -217,7 +231,7 @@ interface StatusOption {
   value: string;
 }
 
-const statusOptions = ref<StatusOption[]>();
+const statusOptions = ref<StatusOption[]>([]);
 
 // 처리상태 옵션 불러오기 (기존 함수는 제거하고 getMatStatus 사용)
 const getStatusOptions = async () => {
