@@ -64,7 +64,9 @@
 
 ### Back-End
 - Node.js  
-- Express  
+- Express
+- PM2
+- NGINX
 
 ### Database
 - MariaDB  
