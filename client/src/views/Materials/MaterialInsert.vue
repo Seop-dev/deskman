@@ -186,12 +186,13 @@ function resetForm() {
   form.insertDate = new Date().toISOString().substring(0, 10);
   form.manager = '';
   form.name = authStore.user?.name || '';
+  form.wrName = '';
   rowData.value = [];
 }
 
 async function submitForm() {
   try {
-    if (!form.issueNumber || !form.insertDate || !form.manager || !form.name) {
+    if (!form.issueNumber || !form.insertDate || !form.manager || !form.name || !form.wrName) {
       $toast.warning('모든 필드를 입력해주세요.', { position: 'top-right', duration: 2000 });
       return;
     }
