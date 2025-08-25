@@ -75,23 +75,9 @@ const $toast = useToast();
 const authStore = useAuthStore();
 const router = useRouter();
 
-/* ✅ axios 인스턴스: 환경변수 기반 baseURL */
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE || '',
-  headers: { 'Content-Type': 'application/json' }
-});
-
-/* ✅ 엔드포인트 (상대경로만 유지) */
-const EP = {
-  nextId: '/facility/next-id',
-  codesFC: '/common/codes/FC',
-  insert: '/facilityInsert',
-  list: '/facility'
-};
-
 /* 공통 호출 */
 const apiTry = async (method, path, data = null, config = {}) => {
-  return await api.request({ method, url: path, data, ...config });
+  return await axios.request({ method, url: path, data, ...config });
 };
 
 const form = reactive({
@@ -132,7 +118,7 @@ const facTypeToPrId = (facType) => {
 // 신규 설비코드, 유형코드 목록
 onMounted(async () => {
   try {
-    const [idRes, codeRes] = await Promise.all([apiTry('get', EP.nextId), apiTry('get', EP.codesFC)]);
+    const [idRes, codeRes] = await Promise.all([apiTry('get', '/facility/next-id'), apiTry('get', '/common/codes/FC')]);
     form.code = idRes?.data?.FAC_ID || '';
     // 서버 응답 정렬 보정(옵션)
     const rows = Array.isArray(codeRes?.data) ? codeRes.data : [];
@@ -187,7 +173,7 @@ const sign = async () => {
     loading.value = true;
 
     // 1) 등록
-    const res = await apiTry('post', EP.insert, payload);
+    const res = await apiTry('post', '/facilityInsert', payload);
     const newId = res?.data?.FAC_ID;
     if (!newId) throw new Error(res?.data?.error || '등록 실패');
     form.code = newId;

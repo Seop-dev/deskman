@@ -89,19 +89,10 @@ const breadcrumbs = shallowRef([
   { title: '점검 관리', disabled: false, href: '#' }
 ]);
 
-/* axios 인스턴스 */
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE || ''
-});
-
-/* API 상대경로 */
-const INSPECTION_COMPLETE_API = '/facility/inspection/complete';
-const PROCESS_API = '/process';
-
 /* 설비유형 코드맵 */
 let fcMap = new Map();
 const preloadCodeMaps = async () => {
-  const { data } = await api.get('/common/codes/FC');
+  const { data } = await axios.get('/common/codes/FC');
   fcMap = new Map(data.map((r) => [String(r.code ?? r.CODE), r.code_name ?? r.CODE_NAME]));
 };
 
@@ -140,8 +131,8 @@ const columnDefs = ref([
 const defaultColDef = { editable: false, sortable: true, resizable: true };
 
 /* 데이터 조회 */
-const fetchFacilities = async () => (await api.get('/facility')).data || [];
-const fetchStatusList = async () => (await api.get('/facility/status')).data || [];
+const fetchFacilities = async () => (await axios.get('/facility')).data || [];
+const fetchStatusList = async () => (await axios.get('/facility/status')).data || [];
 
 const rows = ref([]);
 const fmtDT = (v) => (v ? dayjs(v).format('YYYY-MM-DD HH:mm:ss') : '-');
@@ -234,7 +225,7 @@ const completeInspection = async () => {
   form.doneAt = now();
 
   try {
-    await api.post(INSPECTION_COMPLETE_API, {
+    await axios.post('/facility/inspection/complete', {
       FS_ID: form._fsId,
       FAC_ID: form.code,
       fit: form.fit,
@@ -296,7 +287,7 @@ const mapProcess = (r) => ({
 });
 
 const fetchProcessList = async () => {
-  const { data } = await api.get(PROCESS_API);
+  const { data } = await axios.get('/process');
   return (Array.isArray(data) ? data : []).map(mapProcess);
 };
 

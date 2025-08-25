@@ -42,18 +42,14 @@ import { AllCommunityModule, ModuleRegistry, themeQuartz } from 'ag-grid-communi
 ModuleRegistry.registerModules([AllCommunityModule]);
 const quartz = themeQuartz;
 
-// axios (환경변수 baseURL 사용)
+// API
 import axios from 'axios';
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || ''
-});
 
 // toast
 import { useToast } from 'vue-toast-notification';
 import 'vue-toast-notification/dist/theme-bootstrap.css';
 const $toast = useToast();
 
-/* ─ 컬럼 정의 ─ */
 const columnDefs = ref([
   { field: '설비코드', flex: 1 },
   { field: '설비명', flex: 1 },
@@ -77,11 +73,9 @@ const columnDefs = ref([
 
 const defaultColDef = { editable: false, sortable: true, resizable: true, suppressMenu: true };
 
-/* ─ 상태 ─ */
 const productKeyword = ref('');
 const rawItems = ref([]);
 
-/* ─ 날짜 포맷 ─ */
 function fmt(dt, withTime = true) {
   if (!dt) return '';
   const d = new Date(dt);
@@ -96,10 +90,10 @@ function fmt(dt, withTime = true) {
   return `${day} ${time}`;
 }
 
-/* ─ 점검 이력 로드 ─ */
+// 점검 이력 로드
 const loadInspections = async () => {
   try {
-    const { data } = await api.get('/facility/inspections/history');
+    const { data } = await axios.get(`/facility/inspections/history`);
     const arr = Array.isArray(data) ? data : [];
     rawItems.value = arr.map((r) => ({
       설비코드: r.FAC_ID ?? '',
@@ -122,7 +116,7 @@ const loadInspections = async () => {
 
 onMounted(loadInspections);
 
-/* ─ 검색 필터 ─ */
+// 검색 필터
 const filteredItems = computed(() => {
   const kw = (productKeyword.value || '').trim().toLowerCase();
   if (!kw) return rawItems.value;
@@ -133,7 +127,6 @@ const filteredItems = computed(() => {
   });
 });
 
-/* ─ UI ─ */
 const page = ref({ title: '설비 점검 관리' });
 const breadcrumbs = shallowRef([
   { title: '설비', disabled: true, href: '#' },

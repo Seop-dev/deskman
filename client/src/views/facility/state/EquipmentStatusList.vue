@@ -49,18 +49,10 @@ const $toast = useToast();
 ModuleRegistry.registerModules([AllCommunityModule]);
 const quartz = themeQuartz;
 
-/* ✅ axios 인스턴스(환경변수 기반) */
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE || ''
-});
-
-/* ✅ 상대경로만 사용 */
-const PROCESS_API = '/process';
-
 // 설비유형 코드 라벨 맵
 let facTypeMap = new Map();
 const fetchFacTypeCodes = async () => {
-  const { data } = await api.get('/common/codes/FC');
+  const { data } = await axios.get('/common/codes/FC');
   const map = new Map();
   for (const r of data || []) map.set(String(r.code ?? r.CODE), r.code_name ?? r.CODE_NAME);
   facTypeMap = map;
@@ -107,12 +99,12 @@ const rows = ref([]);
 
 // DB 호출
 const fetchFacilities = async () => {
-  const { data } = await api.get('/facility');
+  const { data } = await axios.get('/facility');
   return data || [];
 };
 const fetchStatusList = async () => {
   try {
-    const { data } = await api.get('/facility/status');
+    const { data } = await axios.get('/facility/status');
     return data || [];
   } catch (e) {
     console.error(e);
@@ -191,7 +183,7 @@ const mapProcess = (r) => ({
 });
 
 const fetchProcessList = async () => {
-  const { data } = await api.get(PROCESS_API);
+  const { data } = await axios.get('/process');
   return (Array.isArray(data) ? data : []).map(mapProcess);
 };
 const openModal = async (title) => {
