@@ -11,25 +11,6 @@
         <v-col cols="12" md="4">
           <v-text-field label="지시번호" v-model.trim="q.issueNumber" dense outlined placeholder="예) WO-20250811-2856" />
         </v-col>
-
-        <v-col cols="12" md="4">
-          <v-text-field label="제품명" v-model.trim="q.productName" dense outlined placeholder="예) 블랙 데스크" />
-        </v-col>
-
-        <v-col cols="12" md="4">
-          <v-select
-            label="제품유형"
-            v-model="q.productType"
-            :items="[
-              { title: '전체', value: '' },
-              { title: '완제품', value: '완제품' },
-              { title: '반제품', value: '반제품' }
-            ]"
-            dense
-            outlined
-            clearable
-          />
-        </v-col>
       </v-row>
 
       <div class="search-actions">
