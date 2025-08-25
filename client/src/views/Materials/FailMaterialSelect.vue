@@ -2,7 +2,7 @@
   <BaseBreadcrumb :title="page.title" :breadcrumbs="breadcrumbs"></BaseBreadcrumb>
   <UiParentCard title="불량품 검색조건">
     <v-row class="mb-4">
-      <v-col cols="3">
+      <v-col cols="4">
         <v-text-field label="자재명" v-model="materialName" placeholder="자재명" dense outlined readonly>
           <template #append-inner>
             <i
@@ -13,11 +13,8 @@
           </template>
         </v-text-field>
       </v-col>
-      <v-col cols="3">
+      <v-col cols="4">
         <v-text-field label="자재코드" v-model="materialCode" placeholder="자재코드" dense outlined readonly></v-text-field>
-      </v-col>
-      <v-col cols="3">
-        <v-text-field label="담당자" v-model="manager" placeholder="담당자" dense outlined />
       </v-col>
       <v-col>
         <div class="radioDiv">
@@ -113,7 +110,6 @@ const colDefs = ref([
   { field: '자재코드', flex: 1 },
   { field: '규격', flex: 1 },
   { field: '단위', flex: 1 },
-  { field: '작성자', flex: 1 },
   { field: '불량품수량', flex: 1 },
   {
     field: '상태',
