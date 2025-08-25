@@ -12,7 +12,7 @@ export const useAuthStore = defineStore({
     async login(email: string, password: string) {
       try {
         // 프론트 → 백엔드 로그인 요청
-        const res = await fetch('http://localhost:3000/login', {
+        const res = await fetch('/api/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
@@ -37,7 +37,7 @@ export const useAuthStore = defineStore({
 
     async logout() {
       try {
-        await fetch('http://localhost:3000/logout', {
+        await fetch('/api/logout', {
           method: 'GET',
           credentials: 'include'
         });
