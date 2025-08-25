@@ -31,6 +31,8 @@ import BaseBreadcrumb from '@/components/shared/BaseBreadcrumb.vue';
 import { AllCommunityModule, ModuleRegistry, themeQuartz } from 'ag-grid-community';
 import { AgGridVue } from 'ag-grid-vue3';
 import UiParentCard from '@/components/shared/UiParentCard.vue';
+import { useAuthStore } from '@/stores/auth';
+const authStore = useAuthStore();
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -106,7 +108,7 @@ const onRowClicked = (event) => {
       product_name: String(row.product_name || ''), // 제품명
       product_type: String(row.product_type || ''), // 제품유형
       qty: String(row.qty || 0), // 총생산량
-      writer: String(row.writer || ''), // 작업자
+      writer: String(authStore.user?.name || ''), // 작업자
       finished_at: String(row.finished_at || '') // 생산완료일
     }
   });

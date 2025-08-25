@@ -14,7 +14,7 @@
           </v-col>
           <v-col cols="3">
             <v-btn class="ml-2" color="darkText" @click="onSearch">검색</v-btn>
-            <v-btn class="ml-2" @click="onReset">초기화</v-btn>
+            <v-btn class="ml-2" color="error" @click="onReset">초기화</v-btn>
           </v-col>
         </v-row>
       </div>

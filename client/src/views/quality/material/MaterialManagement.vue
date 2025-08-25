@@ -78,6 +78,10 @@ import { useToast } from 'vue-toast-notification';
 import 'vue-toast-notification/dist/theme-bootstrap.css';
 const $toast = useToast();
 
+// 로그인 세션 정보
+import { useAuthStore } from '@/stores/auth';
+const authStore = useAuthStore();
+
 // 모듈 등록
 ModuleRegistry.registerModules([ClientSideRowModelModule, RowSelectionModule, ...(import.meta.env.PROD ? [] : [ValidationModule])]);
 
@@ -92,10 +96,15 @@ const breadcrumbs = ref([
   { title: '원자재 검수관리 등록', disabled: false, href: '#' }
 ]);
 
-/* ------------ 불합격 사유 관련 데이터 ------------ */
-const defectReason = ref({
-  description: ''
-});
+/* ------------ 1) 검사기준 그리드 (선택=합격) ------------ */
+// 행 데이터 (rowId로 쓸 고유 키 _id 포함)
+const criteriaRows = ref([
+  { _id: 'moisture', label: '함수율', allow: '수분 함량 12~15% (KS범위)' },
+  { _id: 'appearance', label: '외관결점', allow: '옹이≤150mm, 활결≤50%, 전체길이 1% 이내' },
+  { _id: 'thickness', label: '치수정밀도', allow: '입고자재 ±2mm 이내' },
+  { _id: 'strength', label: '강도', allow: 'KS F 2207, 횡강도 ≥ 35MPa' },
+  { _id: 'surface', label: '외관/표면 결함', allow: '육안확인 시 결점 없음' }
+]);
 
 // 원자재 품질기준 조회
 // DB에서 데이터 가져오기
@@ -119,16 +128,6 @@ const defectReason = ref({
 //     qcStdRowData.value = [];
 //   }
 // };
-
-/* ------------ 1) 검사기준 그리드 (선택=합격) ------------ */
-// 행 데이터 (rowId로 쓸 고유 키 _id 포함)
-const criteriaRows = ref([
-  { _id: 'moisture', label: '함수율', allow: '수분 함량 12~15% (KS범위)' },
-  { _id: 'appearance', label: '외관결점', allow: '옹이≤150mm, 활결≤50%, 전체길이 1% 이내' },
-  { _id: 'thickness', label: '치수정밀도', allow: '입고자재 ±2mm 이내' },
-  { _id: 'strength', label: '강도', allow: 'KS F 2207, 횡강도 ≥ 35MPa' },
-  { _id: 'surface', label: '외관/표면 결함', allow: '육안확인 시 결점 없음' }
-]);
 
 const criteriaApi = shallowRef(null);
 
@@ -159,6 +158,11 @@ const criteriaCols = ref([
     sortable: false
   }
 ]);
+
+/* ------------ 불합격 사유 관련 데이터 ------------ */
+const defectReason = ref({
+  description: ''
+});
 
 const criteriaGridOptions = ref({
   defaultColDef: defaultColDef.value,
@@ -242,7 +246,7 @@ onMounted(() => {
   r.materialName = String(route.query.materialName || '');
   r.totalQty = Number(route.query.totalQty || 0);
   r.inDate = String(route.query.inDate || '');
-  r.user = String(route.query.createdBy || ''); // 세션값 받아오면 반영(스토어)
+  r.user = String(authStore.user?.name || '');
   const today = new Date();
   r.doneDate = today.toISOString().slice(0, 10);
 });
@@ -286,11 +290,11 @@ async function saveForm() {
   const today = new Date();
 
   const passData = {
-    RECEIPT_NO: d.inNo.trim(),
-    MAT_CODE: d.materialCode.trim(),
-    Q_CHECKED_DATE: d.doneDate,
+    RECEIPT_NO: String(d.inNo.trim()),
+    MAT_CODE: String(d.materialCode.trim()),
+    Q_CHECKED_DATE: today.toISOString().slice(0, 10),
     TOTAL_QTY: Number(d.totalQty) || 0,
-    CREATED_BY: d.user?.trim() || null // ← 핵심
+    CREATED_BY: String(authStore.user?.name || '')
   };
 
   const rjtData = {
@@ -299,7 +303,7 @@ async function saveForm() {
     RJT_REASON: String(defectReason.value.description.trim().slice(0, 100)),
     Q_CHECKED_DATE: today.toISOString().slice(0, 10),
     TOTAL_QTY: Number(d.totalQty),
-    CREATED_BY: String(d.user)
+    CREATED_BY: String(authStore.user?.name || '')
   };
 
   if (isPass) {

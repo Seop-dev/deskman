@@ -95,19 +95,18 @@ const rejectPrdDetail = `
       (GetNextRJT_PRD_ID(), ?, ?, GetNextRJT_CODE(), ?)  
 `;
 
-//품질 검사 수치값 등록
-const InsertQualityResult = `
-INSERT INTO QUALITY_STD_RESULT (
-  Q_RESULT_ID, Q_STD_ID, ALLOWED_ITEM, 
-  MEASURED_VALUE, STATUS, RJT_REASON
-) VALUES (GetNextQ_RESULT_ID(), ?, ?, ?, ?, ?)
+// 품질 적용 연결 등록
+const sqlInsertApply = `
+  INSERT INTO QUALITY_APPLY (Q_APPLY_ID, Q_STD_ID, PRD_CERT_ID)
+  VALUES (GetNextQ_APPLY_ID(), ?, ?)
 `;
 
-// 품질 적용 연결 등록
-const InsertQualityApply = `
-INSERT INTO QUALITY_APPLY (
-  Q_APPLY_ID, Q_STD_ID, PRD_CERT_ID
-) VALUES (GetNextQ_APPLY_ID(), ?, ?)
+//품질 검사 수치값 등록
+const sqlInsertResult = `
+  INSERT INTO QUALITY_STD_RESULT
+    (Q_RESULT_ID, Q_APPLY_ID, ALLOWED_ITEM, MEASURED_VALUE, STATUS, RJT_REASON)
+  VALUES
+    (GetNextQ_RESULT_ID(), ?, ?, ?, ?, ?)
 `;
 
 // 제품성적서조회
@@ -123,6 +122,13 @@ const selectPrdCert = `
 SELECT STD_NAME, ALLOWED_VALUE
 FROM QUALITY_STANDARD
 WHERE std_type = '완제품'
+`;
+
+// 원자재품질기준 조회
+const selectMatStd = `
+SELECT STD_NAME, ALLOWED_VALUE
+FROM QULAITY_STANDARD
+WHERE std_type = '
 `;
 
 // 제품성적서 단건조회
