@@ -31,7 +31,7 @@ export interface menu {
 const sidebarItem: menu[] = [
   {
     title: '기준정보',
-
+    auth: ['관리자', '부서담당자'],
     children: [
       {
         title: '사원 관리',
@@ -248,7 +248,7 @@ const sidebarItem: menu[] = [
           },
           {
             title: '설비 등록',
-
+            auth: ['관리자', '부서담당자'],
             to: '/utils/Registration'
           },
           {
@@ -336,7 +336,7 @@ const sidebarItem: menu[] = [
           },
           {
             title: '기준관리',
-
+            auth: ['관리자', '부서담당자'],
             to: '/qm/qsmng'
           }
         ]
@@ -348,7 +348,7 @@ const sidebarItem: menu[] = [
     children: [
       {
         title: '창고관리',
-
+        auth: ['관리자', '부서담당자'],
         to: '/warehouse/WareInfo'
       },
       {
