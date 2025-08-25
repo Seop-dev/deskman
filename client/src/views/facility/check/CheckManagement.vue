@@ -89,19 +89,23 @@ const breadcrumbs = shallowRef([
   { title: '점검 관리', disabled: false, href: '#' }
 ]);
 
-// API 경로
-const apiBase = import.meta?.env?.VITE_API_URL;
-const INSPECTION_COMPLETE_API = `${apiBase}/facility/inspection/complete`;
-const PROCESS_API = `${apiBase}/process`;
+/* axios 인스턴스 */
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_BASE || ''
+});
 
-// 설비유형 코드맵
+/* API 상대경로 */
+const INSPECTION_COMPLETE_API = '/facility/inspection/complete';
+const PROCESS_API = '/process';
+
+/* 설비유형 코드맵 */
 let fcMap = new Map();
 const preloadCodeMaps = async () => {
-  const { data } = await axios.get(`${apiBase}/common/codes/FC`);
+  const { data } = await api.get('/common/codes/FC');
   fcMap = new Map(data.map((r) => [String(r.code ?? r.CODE), r.code_name ?? r.CODE_NAME]));
 };
 
-// 공정코드 필터링
+/* 공정코드 필터링 */
 const processCode = ref('');
 const gridApi = ref(null);
 const onGridReady = (e) => {
@@ -116,7 +120,7 @@ const applyProcessFilter = (procCode) => {
   gridApi.value.onFilterChanged();
 };
 
-// 컬럼 정의
+/* 컬럼 정의 */
 const columnDefs = ref([
   { field: '공정코드', hide: true, filter: 'agTextColumnFilter' },
   { field: '설비코드', flex: 1 },
@@ -135,14 +139,14 @@ const columnDefs = ref([
 ]);
 const defaultColDef = { editable: false, sortable: true, resizable: true };
 
-// 데이터 조회
-const fetchFacilities = async () => (await axios.get(`${apiBase}/facility`)).data || [];
-const fetchStatusList = async () => (await axios.get(`${apiBase}/facility/status`)).data || [];
+/* 데이터 조회 */
+const fetchFacilities = async () => (await api.get('/facility')).data || [];
+const fetchStatusList = async () => (await api.get('/facility/status')).data || [];
 
 const rows = ref([]);
 const fmtDT = (v) => (v ? dayjs(v).format('YYYY-MM-DD HH:mm:ss') : '-');
 
-// 점검대상
+/* 점검대상 */
 const composeRows = (statusRows, facilities) => {
   const facMap = new Map(facilities.map((f) => [f.FAC_ID, f]));
   const openInspections = statusRows.filter((s) => Number(s.FS_STATUS) === 1 && (s.FS_REASON || '') === '점검');
@@ -167,7 +171,7 @@ const composeRows = (statusRows, facilities) => {
   });
 };
 
-// 초기 데이터 로드
+/* 초기 데이터 로드 */
 const init = async () => {
   try {
     await preloadCodeMaps();
@@ -181,6 +185,7 @@ const init = async () => {
   }
 };
 
+/* 폼 */
 const form = reactive({
   code: '',
   name: '',
@@ -211,7 +216,7 @@ const onPick = (e) => {
   });
 };
 
-// 점검완료 처리
+/* 점검완료 처리 */
 const completeInspection = async () => {
   if (!form._fsId) {
     $toast.error('설비를 먼저 선택하세요.', { position: 'top-right', duration: 1000 });
@@ -229,7 +234,7 @@ const completeInspection = async () => {
   form.doneAt = now();
 
   try {
-    await axios.post(INSPECTION_COMPLETE_API, {
+    await api.post(INSPECTION_COMPLETE_API, {
       FS_ID: form._fsId,
       FAC_ID: form.code,
       fit: form.fit,
@@ -244,7 +249,6 @@ const completeInspection = async () => {
     gridApi.value?.refreshCells({ force: true });
     $toast.success('점검이 완료되었습니다.', { position: 'top-right', duration: 1000 });
 
-    // 폼 초기화
     Object.assign(form, {
       code: '',
       name: '',
@@ -264,12 +268,12 @@ const completeInspection = async () => {
   }
 };
 
-// 유틸: 현재시각
+/* 유틸: 현재시각 */
 function now() {
   return dayjs().format('YYYY-MM-DD HH:mm:ss');
 }
 
-// 공정 목록 모달
+/* 공정 목록 모달 */
 const modalRef = ref(null);
 const modalTitle = ref('');
 const modalRowData = ref([]);
@@ -282,7 +286,6 @@ const modalColDefs = ref([
   { field: '비고', flex: 1 }
 ]);
 
-// 공정 데이터 매핑
 const mapProcess = (r) => ({
   공정코드: r.PR_ID ?? r.PRC_CODE ?? '',
   공정명: r.PRC_NAME ?? '',
@@ -292,13 +295,11 @@ const mapProcess = (r) => ({
   비고: r.PRC_NOTE ?? ''
 });
 
-// 공정 목록 조회
 const fetchProcessList = async () => {
-  const { data } = await axios.get(PROCESS_API);
+  const { data } = await api.get(PROCESS_API);
   return (Array.isArray(data) ? data : []).map(mapProcess);
 };
 
-// 모달 열기
 const openModal = async (title) => {
   try {
     modalTitle.value = title;
@@ -310,7 +311,6 @@ const openModal = async (title) => {
   }
 };
 
-// 모달 선택 반영
 const modalConfirm = (selectedRow) => {
   if (!selectedRow) return;
   processCode.value = selectedRow.공정코드 || '';

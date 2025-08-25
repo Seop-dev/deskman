@@ -49,19 +49,24 @@ const $toast = useToast();
 ModuleRegistry.registerModules([AllCommunityModule]);
 const quartz = themeQuartz;
 
-const apiBase = import.meta?.env?.VITE_API_URL;
-const PROCESS_API = `${apiBase}/process`;
+/* ✅ axios 인스턴스(환경변수 기반) */
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_BASE || ''
+});
+
+/* ✅ 상대경로만 사용 */
+const PROCESS_API = '/process';
 
 // 설비유형 코드 라벨 맵
 let facTypeMap = new Map();
 const fetchFacTypeCodes = async () => {
-  const { data } = await axios.get(`${apiBase}/common/codes/FC`);
+  const { data } = await api.get('/common/codes/FC');
   const map = new Map();
-  for (const r of data || []) map.set(r.code ?? r.CODE, r.code_name ?? r.CODE_NAME);
+  for (const r of data || []) map.set(String(r.code ?? r.CODE), r.code_name ?? r.CODE_NAME);
   facTypeMap = map;
 };
 
-//Grid 공정
+// Grid 공정
 const processCode = ref('');
 const defaultColDef = { editable: false, sortable: true, resizable: true };
 const gridApi = ref(null);
@@ -100,14 +105,14 @@ const columnDefs = ref([
 
 const rows = ref([]);
 
-//DB 호출
+// DB 호출
 const fetchFacilities = async () => {
-  const { data } = await axios.get(`${apiBase}/facility`);
+  const { data } = await api.get('/facility');
   return data || [];
 };
 const fetchStatusList = async () => {
   try {
-    const { data } = await axios.get(`${apiBase}/facility/status`);
+    const { data } = await api.get('/facility/status');
     return data || [];
   } catch (e) {
     console.error(e);
@@ -118,7 +123,7 @@ const fetchStatusList = async () => {
 
 const statusTime = (r) => new Date(r.FS_CHECKDAY || r.DOWN_ENDDAY || r.DOWN_STARTDAY || 0).getTime();
 
-//설비
+// 설비 + 상태 머지
 const mergeFacilitiesWithStatus = (facilities, statusRows) => {
   const sMap = new Map();
   for (const r of statusRows || []) {
@@ -163,7 +168,7 @@ const init = async () => {
   }
 };
 
-//공정 모달
+// 공정 모달
 const modalRef = ref(null);
 const modalTitle = ref('');
 const modalRowData = ref([]);
@@ -186,7 +191,7 @@ const mapProcess = (r) => ({
 });
 
 const fetchProcessList = async () => {
-  const { data } = await axios.get(PROCESS_API);
+  const { data } = await api.get(PROCESS_API);
   return (Array.isArray(data) ? data : []).map(mapProcess);
 };
 const openModal = async (title) => {

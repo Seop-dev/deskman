@@ -86,8 +86,13 @@ const $toast = useToast();
 ModuleRegistry.registerModules([AllCommunityModule]);
 const quartz = themeQuartz;
 
-const apiBase = import.meta?.env?.VITE_API_URL;
-const PROCESS_API = `${apiBase}/process`;
+/* ✅ axios 인스턴스: 환경변수 기반 baseURL */
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_BASE || ''
+});
+
+/* ✅ 상대경로만 사용 */
+const PROCESS_API = '/process';
 
 let fcMap = new Map();
 let rrMap = new Map();
@@ -95,7 +100,7 @@ const rrOptions = ref([]);
 
 // 코드 테이블
 const preloadCodeMaps = async () => {
-  const [fcRes, rrRes] = await Promise.all([axios.get(`${apiBase}/common/codes/FC`), axios.get(`${apiBase}/common/codes/RR`)]);
+  const [fcRes, rrRes] = await Promise.all([api.get('/common/codes/FC'), api.get('/common/codes/RR')]);
   const toMap = (rows) => {
     const m = new Map();
     for (const r of rows || []) m.set(String(r.code ?? r.CODE), r.code_name ?? r.CODE_NAME);
@@ -137,8 +142,8 @@ const columnDefs = ref([
 
 const rows = ref([]);
 
-const fetchFacilities = async () => (await axios.get(`${apiBase}/facility`)).data || [];
-const fetchStatusList = async () => (await axios.get(`${apiBase}/facility/status`)).data || [];
+const fetchFacilities = async () => (await api.get('/facility')).data || [];
+const fetchStatusList = async () => (await api.get('/facility/status')).data || [];
 
 // utils
 const fmtDT = (v) => {
@@ -254,7 +259,7 @@ const setDown = async () => {
 
   try {
     if (detail._fsId) {
-      await axios.patch(`${apiBase}/facility/status/down`, {
+      await api.patch('/facility/status/down', {
         FS_ID: detail._fsId,
         FS_STATUS: 1,
         FS_REASON: detail.downReason,
@@ -265,7 +270,7 @@ const setDown = async () => {
         MANAGER: detail.manager || '-'
       });
     } else {
-      await axios.post(`${apiBase}/facility/status`, {
+      await api.post('/facility/status', {
         FAC_ID: detail.code,
         FS_STATUS: 1,
         FS_REASON: detail.downReason,
@@ -296,7 +301,7 @@ const setUp = async () => {
 
   try {
     if (fsId) {
-      await axios.patch(`${apiBase}/facility/status/end`, {
+      await api.patch('/facility/status/end', {
         FS_ID: fsId,
         endTime: endStr,
         restoreStatus: 0,
@@ -344,7 +349,10 @@ const mapProcess = (r) => ({
   비고: r.PRC_NOTE ?? ''
 });
 
-const fetchProcessList = async () => (await axios.get(PROCESS_API)).data.map(mapProcess);
+const fetchProcessList = async () => {
+  const { data } = await api.get(PROCESS_API);
+  return (Array.isArray(data) ? data : []).map(mapProcess);
+};
 const openModal = async (title) => {
   try {
     modalTitle.value = title;
