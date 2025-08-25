@@ -95,15 +95,6 @@
       <v-card class="plan-card">
         <v-card-title class="d-flex align-center justify-space-between">
           <span>주문서 목록</span>
-          <v-text-field
-            v-model.trim="orderKeyword"
-            placeholder="주문번호/업체/제품명 검색"
-            hide-details
-            density="compact"
-            variant="outlined"
-            style="width: 320px"
-            @keyup.enter="fetchOrders"
-          />
         </v-card-title>
 
         <v-card-text class="dialog-body">

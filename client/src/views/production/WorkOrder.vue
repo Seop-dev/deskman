@@ -105,15 +105,6 @@
     <v-card class="plan-card">
       <v-card-title class="d-flex align-center justify-space-between">
         <span>계획서 목록</span>
-        <v-text-field
-          v-model.trim="planKeyword"
-          placeholder="계획번호/제품코드/제품명 검색"
-          hide-details
-          density="compact"
-          variant="outlined"
-          style="width: 320px"
-          @keyup.enter="doPlanSearch"
-        />
       </v-card-title>
       <v-card-text class="dialog-body">
         <ag-grid-vue
@@ -311,9 +302,6 @@ async function fetchPlans() {
     console.error(e);
     toast('계획서 조회 오류', 'error');
   }
-}
-function doPlanSearch() {
-  fetchPlans();
 }
 function openPlanDialog() {
   planKeyword.value = '';

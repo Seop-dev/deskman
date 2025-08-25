@@ -36,27 +36,28 @@
                 :items-per-page-options="[5]"
                 v-model:page="orderPage"
               >
-                <template #item.progressCol="{ item }">
+                <!-- ✅ ESLint v-slot 오류 회피: 동적 슬롯 -->
+                <template #[`item.progressCol`]="{ item }">
                   <div class="prog-wrap">
-                    <v-progress-linear :model-value="orderProgress(item)" height="8" />
-                    <span class="prog-text">{{ orderProgress(item) }}%</span>
+                    <v-progress-linear :model-value="orderProgress(item?.raw ?? item)" height="8" />
+                    <span class="prog-text">{{ orderProgress(item?.raw ?? item) }}%</span>
                   </div>
                 </template>
 
-                <template #item.stateCol="{ item }">
-                  <v-chip size="small" :color="stateColor(overallState(item))" variant="tonal">
-                    {{ overallState(item) }}
+                <template #[`item.stateCol`]="{ item }">
+                  <v-chip size="small" :color="stateColor(overallState(item?.raw ?? item))" variant="tonal">
+                    {{ overallState(item?.raw ?? item) }}
                   </v-chip>
                 </template>
 
-                <template #item.pick="{ item }">
+                <template #[`item.pick`]="{ item }">
                   <v-btn
                     class="btn-xs"
-                    :variant="pickedOrder?.id === item.id ? 'elevated' : 'tonal'"
-                    :color="pickedOrder?.id === item.id ? 'primary' : undefined"
-                    @click="pickOrder(item)"
+                    :variant="pickedOrder?.id === (item?.raw?.id ?? item.id) ? 'elevated' : 'tonal'"
+                    :color="pickedOrder?.id === (item?.raw?.id ?? item.id) ? 'primary' : undefined"
+                    @click="pickOrder(item?.raw ?? item)"
                   >
-                    {{ pickedOrder?.id === item.id ? '선택됨' : '선택' }}
+                    {{ pickedOrder?.id === (item?.raw?.id ?? item.id) ? '선택됨' : '선택' }}
                   </v-btn>
                 </template>
               </v-data-table>
@@ -74,7 +75,7 @@
                     <span class="divider">|</span>
                     <span class="muted">제품</span> {{ pickedOrder.productName }} ({{ pickedOrder.productType }})
                     <span class="divider">|</span>
-                    <span class="muted">목표수량/기생산량/미생산량</span>
+                    <span class="muted">목표/기생산/미생산</span>
                     <b>{{ pickedOrder.targetQty }}</b> / {{ producedOverall }} / {{ remainingQty }}
                   </div>
                 </div>
@@ -90,14 +91,14 @@
                     :items-per-page-options="[5]"
                     hide-default-footer
                   >
-                    <template #item.progress="{ item }">
+                    <template #[`item.progress`]="{ item }">
                       <div class="prog-wrap">
                         <v-progress-linear :model-value="item.progress" height="6" />
                         <span class="prog-text">{{ item.progress }}%</span>
                       </div>
                     </template>
 
-                    <template #item.state="{ item }">
+                    <template #[`item.state`]="{ item }">
                       <v-chip size="small" :color="stateChipColor(item.state)" variant="tonal">
                         {{ item.stateLabel }}
                       </v-chip>
@@ -153,7 +154,7 @@
                   <v-data-table
                     class="no-hover table-fixed"
                     :headers="eqHeaders"
-                    :items="eqRows"
+                    :items="eqRowsOverlayed"
                     density="compact"
                     item-key="id"
                     fixed-header
@@ -162,13 +163,13 @@
                     :items-per-page-options="[5]"
                     hide-default-footer
                   >
-                    <template #item.status="{ item }">
+                    <template #[`item.status`]="{ item }">
                       <v-chip size="small" :color="statusColor(item.status)" variant="tonal">
                         {{ statusLabel(item.status) }}
                       </v-chip>
                     </template>
 
-                    <template #item.pick="{ item }">
+                    <template #[`item.pick`]="{ item }">
                       <v-btn
                         class="btn-xs"
                         :variant="pickedEquipId === item.id ? 'elevated' : 'tonal'"
@@ -300,6 +301,15 @@ const pickedWorker = ref(null);
 const pickedProcess = ref(null);
 const pickedEquipId = ref(null);
 
+/* ===== 설비 "기억" (지시ID+공정코드 단위) ===== */
+const equipMemory = ref(new Map()); // key: `${orderId}:${proc}`, value: equipId
+const memKey = (orderId, proc) => `${orderId}:${proc}`;
+const rememberEquip = (orderId, proc, equipId) => {
+  if (!orderId || !proc || !equipId) return;
+  equipMemory.value.set(memKey(orderId, proc), String(equipId));
+};
+const recallEquip = (orderId, proc) => equipMemory.value.get(memKey(orderId, proc)) || null;
+
 /* 설비 */
 const equipments = ref([]);
 const PR_TO_PROC = { 'PRC-001': 'CUT', 'PRC-002': 'FAB', 'PRC-003': 'POL', 'PRC-004': 'PAI', 'PRC-005': 'ASM' };
@@ -322,6 +332,20 @@ async function loadEquipmentsByProcess(procCode = '') {
   }));
 }
 
+/* === 다른 지시에서 RUN 중인 설비를 실시간 식별 === */
+const busyEquipIds = computed(() => {
+  const set = new Set();
+  const proc = pickedProcess.value;
+  if (!proc) return set;
+  for (const o of orders.value) {
+    const ps = o?.processes?.[proc];
+    if (ps?.status === 'RUN' && Array.isArray(ps.equipIds)) {
+      ps.equipIds.forEach((id) => set.add(String(id)));
+    }
+  }
+  return set;
+});
+
 /* 테이블 헤더 */
 const orderHeaders = [
   { title: '지시번호', value: 'issueNumber', width: 160 },
@@ -340,14 +364,48 @@ const eqHeaders = [
 ];
 
 const pickedEquip = computed(() => (!pickedEquipId.value ? null : equipments.value.find((e) => e.id === pickedEquipId.value) || null));
-const eqRows = computed(() => equipments.value.filter((e) => e.process === pickedProcess.value));
+
+/* 표시용 행: 서버 상태에 busyEquipIds를 오버레이해서 IN_USE로 강제 노출 */
+const eqRowsOverlayed = computed(() => {
+  const proc = pickedProcess.value;
+  return equipments.value
+    .filter((e) => e.process === proc)
+    .map((e) => {
+      const row = { ...e };
+      if (busyEquipIds.value.has(String(e.id)) && row.status !== EQ.MAINT) {
+        row.status = EQ.IN_USE; // 다른 지시가 사용 중이면 무조건 '생산중'으로 표시
+      }
+      return row;
+    });
+});
+
 const statusLabel = (s) => (s === EQ.AVAILABLE ? '사용가능' : s === EQ.IN_USE ? '생산중' : s === EQ.MAINT ? '점검중' : s);
 const statusColor = (s) => (s === EQ.AVAILABLE ? 'success' : s === EQ.IN_USE ? 'warning' : 'grey');
-const canPickThis = (row) => row.status === EQ.AVAILABLE || pickedEquipId.value === row.id;
+
+/* 이 설비를 현재 지시/공정에서 이미 사용 중인가? (기억 기반 허용) */
+const isRememberedEquip = (rowId) => {
+  if (!pickedOrder.value || !pickedProcess.value) return false;
+  const remembered = recallEquip(pickedOrder.value.id, pickedProcess.value);
+  return String(remembered || '') === String(rowId || '');
+};
+
+/* 선택 가능 조건:
+   - 설비가 AVAILABLE 이면 OK
+   - 설비가 IN_USE라도 "현재 지시/공정에서 기억된 장비"면 OK (본인이 점유한 상태)
+   - 즉, "다른 지시"가 쓰는 IN_USE는 차단
+*/
+const canPickThis = (row) => row.status === EQ.AVAILABLE || isRememberedEquip(row.id);
+
 const buttonColor = (row) => (pickedEquipId.value === row.id ? 'primary' : undefined);
+
 function pickEquip(row) {
-  if (!canPickThis(row)) return alert('이 설비는 현재 선택할 수 없습니다. (상태: ' + statusLabel(row.status) + ')');
+  if (!canPickThis(row)) {
+    return alert(`다른 지시에서 사용 중인 설비입니다. (${statusLabel(row.status)})`);
+  }
   pickedEquipId.value = row.id;
+  if (pickedOrder.value && pickedProcess.value) {
+    rememberEquip(pickedOrder.value.id, pickedProcess.value, row.id);
+  }
 }
 
 /* 공정/지시 관련 계산 + 라벨링 */
@@ -385,6 +443,7 @@ function onPickProcess(code) {
   pickedProcess.value = code;
 }
 
+/* 지시 목록 상태 라벨 */
 function overallState(order) {
   if (!order || !order.processes) return 'N/A';
   const isSemi = order.productType === '반제품';
@@ -409,11 +468,12 @@ const orderProgress = (o) => {
   if (!list.length) return 0;
   return Math.round(list.reduce((a, b) => a + (b?.progress || 0), 0) / list.length);
 };
+
 function pickOrder(o) {
   pickedOrder.value = o;
   pickedWorker.value = null;
   pickedProcess.value = null;
-  pickedEquipId.value = null;
+  pickedEquipId.value = null; // 공정 선택 시 watch에서 복원
 }
 
 const currentPs = computed(() => pickedOrder.value?.processes?.[pickedProcess.value]);
@@ -510,12 +570,21 @@ function nowISO() {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
 }
 
-/* 공정 선택시 설비 로딩 */
+/* 공정 선택시 설비 로딩 + 선택 복원 */
 watch(pickedProcess, async (code) => {
   inputQty.value = 0;
   ctrlTime.value = { startAt: '', endAt: '' };
-  pickedEquipId.value = currentPs.value?.equipIds?.[0] || null;
+
+  // 1) 서버 상태 로딩
   await loadEquipmentsByProcess(code || '');
+
+  // 2) 과거 선택 복원(메모 → 상태 기반)
+  const mem = pickedOrder.value ? recallEquip(pickedOrder.value.id, code) : null;
+  const fromState = currentPs.value?.equipIds?.[0] || null;
+  const candidate = mem || fromState || null;
+
+  // 후보가 실제 목록에 있으면 복원
+  pickedEquipId.value = equipments.value.some((e) => String(e.id) === String(candidate)) ? candidate : null;
 });
 
 /* 제어 */
@@ -542,13 +611,19 @@ async function doStart() {
   if (!res?.ok) return alert(res?.msg || '작업 시작 실패');
 
   ctrlTime.value.startAt = (res.startedAt || startAt).replace(' ', 'T').slice(0, 16);
+
   const st = pickedOrder.value.processes[pickedProcess.value] ?? (pickedOrder.value.processes[pickedProcess.value] = {});
   st.status = 'RUN';
   st.progress = Math.min(99, st.progress ?? 0);
   st.equipIds = [pickedEquipId.value];
 
+  // 기억 저장
+  rememberEquip(pickedOrder.value.id, pickedProcess.value, pickedEquipId.value);
+
+  // 설비 상태 갱신(로컬)
   const eq = equipments.value.find((e) => e.id === pickedEquipId.value);
   if (eq) eq.status = EQ.IN_USE;
+
   alert('작업이 시작되었습니다.');
 }
 
@@ -573,11 +648,13 @@ async function doFinish() {
     if (!res?.ok) return alert(res?.msg || '작업종료 실패');
 
     ctrlTime.value.endAt = (res.endedAt || endAt).replace(' ', 'T').slice(0, 16);
+
     const st = pickedOrder.value.processes[pickedProcess.value] ?? (pickedOrder.value.processes[pickedProcess.value] = {});
     if (typeof res.prodQty === 'number') st.prodQty = res.prodQty;
     if (typeof res.progress === 'number') st.progress = res.progress;
     st.status = st.progress >= 100 ? 'DONE' : 'IDLE';
 
+    // 설비 상태 갱신(로컬) + 서버 최신상태 반영
     const eq = equipments.value.find((e) => e.id === pickedEquipId.value);
     if (eq) eq.status = EQ.AVAILABLE;
     await loadEquipmentsByProcess(pickedProcess.value);
@@ -587,6 +664,7 @@ async function doFinish() {
 
     if (res.allDone) alert('이 지시의 모든 공정이 완료되어 품질검사 대기 큐에 적재되었습니다.');
 
+    // 지시목록 새로고침(상태/진행률 반영)
     if (store.loadOrders) {
       await store.loadOrders({ page: 1, size: 100 });
       const refreshed = store.orders.find((o) => Number(o.id) === Number(pickedOrder.value.id));
@@ -711,7 +789,6 @@ onMounted(async () => {
   padding-bottom: 10px;
   margin-bottom: 8px;
 }
-
 .procs-grid {
   margin-top: 4px;
 }
