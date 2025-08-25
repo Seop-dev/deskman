@@ -551,6 +551,16 @@ router.post("/wrShipUpdate", async (req, res) => {
     console.log(e);
   }
 });
+// 출하 - wrShipUpdate
+router.post("/wrShipUpdate2", async (req, res) => {
+  const data = req.body;
+  try {
+    let list = await masterService.wrShipUpdate2(data);
+    res.send(list);
+  } catch (e) {
+    console.log(e);
+  }
+});
 
 // 출하 - 운송업체 조회
 
