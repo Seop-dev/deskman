@@ -5,26 +5,28 @@
     <!-- 버튼 -->
     <v-row class="mb-4" justify="space-between" align="center">
       <v-col cols="auto">
-        <v-btn color="warning" class="mr-2 button" @click="openModal('제품유형', materialRowData, materialColDefs)">제품조회 </v-btn>
-        <v-btn color="error" class="top_btn_ser" variant="elevated" @click="resetForm">초기화</v-btn>
+        <!-- <v-btn color="warning" class="mr-2 button" @click="openModal('제품유형', prdRowData, prdColDefs)">제품조회 </v-btn> -->
+        <!-- <MoDal ref="modalRef" :title="modalTitle" :rowData="modalRowData" :colDefs="modalColDefs" @confirm="onModalConfirm" /> -->
       </v-col>
-      <MoDal ref="modalRef" :title="modalTitle" :rowData="modalRowData" :colDefs="modalColDefs" @confirm="onModalConfirm" />
     </v-row>
     <v-row class="mb-4">
-      <v-col cols="3">
-        <v-text-field label="제품유형" v-model="form.prdType" dense outlined />
-      </v-col>
-      <v-col cols="3">
-        <v-text-field label="검사완료일자" v-model="form.chkedDate" type="date" dense outlined />
-      </v-col>
       <v-col cols="3">
         <v-text-field label="검사번호" v-model="form.certId" dense outlined />
       </v-col>
       <v-col cols="3">
         <v-text-field label="제품명" v-model="form.prdName" dense outlined />
       </v-col>
+      <v-col cols="3">
+        <v-text-field label="제품유형" v-model="form.prdType" dense outlined />
+      </v-col>
+      <v-col cols="3">
+        <v-text-field label="검사완료일자" v-model="form.chkedDate" type="date" dense outlined />
+      </v-col>
+      <v-row justify="end">
+        <v-btn color="error" class="top_btn_ser" variant="elevated" @click="resetForm">초기화</v-btn>
+      </v-row>
     </v-row>
-
+    <br />
     <ag-grid-vue
       :rowData="gridData"
       :columnDefs="colDefs"
@@ -42,64 +44,9 @@ import { useRouter } from 'vue-router';
 import { ref, shallowRef, computed, onBeforeMount } from 'vue';
 import BaseBreadcrumb from '@/components/shared/BaseBreadcrumb.vue';
 import { AllCommunityModule, ModuleRegistry, themeQuartz } from 'ag-grid-community';
-import { AgGridVue } from 'ag-grid-vue3'; // Vue Data Grid Component
+import { AgGridVue } from 'ag-grid-vue3';
 import UiParentCard from '@/components/shared/UiParentCard.vue';
 import MoDal from '@/views/common/NewModal.vue';
-
-// ----------------- 모달 (기본 정의) -----------------
-const modalRef = ref(null);
-const modalTitle = ref('');
-const modalRowData = ref([]);
-const modalColDefs = ref([]);
-
-const materialColDefs = [
-  { field: '검사번호', headerName: '검사번호', flex: 1.2 },
-  { field: '제품코드', headerName: '제품코드', flex: 1 },
-  { field: '제품명', headerName: '제품명', flex: 0.8 },
-  { field: '검사완료일자', headerName: '검사완료일자', flex: 0.8 },
-  { field: '제품유형', headerName: '제품유형', flex: 0.6 }
-];
-const materialRowData = ref([
-  {
-    검사번호: 'QC100',
-    제품코드: 'DSK100',
-    제품명: '흰색학생책상',
-    검사완료일자: '2025-08-12',
-    제품유형: '완제품'
-  },
-  {
-    검사번호: 'QC101',
-    제품코드: 'DSK101',
-    제품명: '검은색학생책상',
-    검사완료일자: '2025-08-12',
-    제품유형: '반제품'
-  }
-]);
-
-const openModal = (title, rowData, colDefs) => {
-  modalTitle.value = title;
-  modalRowData.value = rowData;
-  modalColDefs.value = colDefs;
-  if (modalRef.value) {
-    modalRef.value.open();
-  }
-};
-
-function onModalConfirm(selectedRow) {
-  form.value.prdType = selectedRow.제품유형;
-  form.value.chkedDate = selectedRow.검사완료일자;
-  form.value.certId = selectedRow.검사번호;
-  form.value.prdName = selectedRow.제품명;
-
-  // 그리드 데이터에 추가
-  rowData.value.push({
-    검사번호: selectedRow.검사번호,
-    제품코드: selectedRow.제품코드,
-    제품명: selectedRow.제품명,
-    검사완료일자: selectedRow.검사완료일자,
-    제품유형: selectedRow.제품유형
-  });
-}
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -127,6 +74,56 @@ const form = ref({
   prdName: ''
 });
 
+// 모달 구성
+// const modalRef = ref(null);
+// const modalTitle = ref('');
+// const modalRowData = ref([]);
+// const modalColDefs = ref([]);
+
+// const openModal = (title, rowData, colDefs) => {
+//   modalTitle.value = title;
+//   modalRowData.value = rowData;
+//   modalColDefs.value = colDefs;
+//   if (modalRef.value) {
+//     modalRef.value.open();
+//   }
+// };
+
+// function onModalConfirm(selectedRow) {
+//   form.value.certId = selectedRow.검사번호;
+//   form.value.prdName = selectedRow.제품명;
+//   form.value.prdType = selectedRow.제품유형;
+//   form.value.chkedDate = selectedRow.검사완료일자;
+
+//   // 그리드 데이터에 추가
+//   rowData.value.push({
+//     certId: selectedRow.검사번호,
+//     prdName: selectedRow.제품명,
+//     prdType: selectedRow.제품유형,
+//     finishedAt: selectedRow.검사완료일자
+//   });
+// }
+
+const colDefs = ref([
+  { headerName: '검사번호', field: 'certId' },
+  { headerName: '제품명', field: 'prdName' },
+  { headerName: '제품유형', field: 'prdType' },
+  { headerName: '제품코드', field: 'prdCode' },
+  { headerName: '검사완료일자', field: 'finishedAt' }
+]);
+
+const rowData = ref([]);
+
+// // 목록 그리드 구성
+// const prdColDefs = [
+//   { field: '검사번호', headerName: '검사번호', flex: 1.2 },
+//   { field: '제품코드', headerName: '제품코드', flex: 1 },
+//   { field: '제품명', headerName: '제품명', flex: 0.8 },
+//   { field: '검사완료일자', headerName: '검사완료일자', flex: 0.8 },
+//   { field: '제품유형', headerName: '제품유형', flex: 0.6 }
+// ];
+// const prdRowData = ref([]);
+
 // db연결
 const getPrdList = async () => {
   try {
@@ -136,11 +133,13 @@ const getPrdList = async () => {
     if (result.data.length > 0) {
       // DB 필드명을 Vue 컴포넌트에서 사용하는 필드명으로 매핑
       rowData.value = result.data.map((item) => ({
-        certId: item.PRD_CERT_ID,
-        prdCode: item.PRD_CODE,
-        prdName: item.PRD_NAME,
-        chkedDate: item.Q_CHECKED_DATE.substring(0, 10),
-        prdType: item.PRD_TYPE
+        certId: item.PRD_CERT_ID, // 검사번호
+        prdCode: item.PRD_CODE, // 제품코드
+        prdName: item.PRD_NAME, // 제품명
+        finishedAt: (item.Q_CHECKED_DATE || '').substring(0, 10), // 검사완료일자
+        prdType: item.PRD_TYPE, // 제품유형
+        totalQty: item.TOTAL_QTY, // 총수량
+        writer: item.CREATED_BY // 작성자
       }));
     }
   } catch (err) {
@@ -152,17 +151,6 @@ onBeforeMount(() => {
   getPrdList();
 });
 
-// 한글 헤더는 headerName으로
-const colDefs = ref([
-  { headerName: '검사번호', field: 'certId' },
-  { headerName: '제품코드', field: 'prdCode' },
-  { headerName: '제품명', field: 'prdName' },
-  { headerName: '검사완료일자', field: 'chkedDate' },
-  { headerName: '제품유형', field: 'prdType' }
-]);
-
-const rowData = ref([]);
-
 // 검색활성화
 const gridData = computed(() => {
   const date = (form.value.chkedDate || '').trim(); // 날짜는 소문자 불필요
@@ -173,7 +161,7 @@ const gridData = computed(() => {
   const toL = (v) => (v ?? '').toString().toLowerCase().trim();
 
   return rowData.value.filter((r) => {
-    const byChkDate = !date || (r.chkedDate ?? '').includes(date);
+    const byChkDate = !date || (r.finishedAt ?? '').includes(date);
     const byCid = !cid || toL(r.certId).includes(cid); // 부분일치
     const byPrdn = !prdn || toL(r.prdName).includes(prdn); //  제품명 포함 검색
     const byPrdt = !prdt || toL(r.prdType).includes(prdt); //  유형 포함(또는 ===)
@@ -197,11 +185,13 @@ const onRowClicked = (event) => {
   router.push({
     path: '/qm/prdlstdtl',
     query: {
-      certId: rowData.PRD_CERT_ID,
-      prdCode: rowData.PRD_CODE,
-      prdName: rowData.PRD_NAME,
-      chkedDate: rowData.Q_CHECKED_DATE,
-      prdType: rowData.PRD_TYPE
+      certId: rowData.certId, // 검사번호
+      prdCode: rowData.prdCode, // 제품코드
+      prdName: rowData.prdName, // 제품명
+      finishedAt: rowData.finishedAt, // 검사완료일자
+      prdType: rowData.prdType, // 제품유형
+      totalQty: rowData.totalQty, // 총수량
+      writer: rowData.writer // 작성자
     }
   });
 };

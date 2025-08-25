@@ -158,6 +158,12 @@ router.post("/rejectprd", async (req, res) => {
   }
 });
 
+// 제품성적서기준 조회
+router.get("/prdqstd", async (req, res) => {
+  const list = await qualityService.selectPrdQstd();
+  res.send(list);
+});
+
 // 품질기준 조회
 router.get("/qstdlist", async (req, res) => {
   const list = await qualityService.selectQstd();
@@ -167,15 +173,11 @@ router.get("/qstdlist", async (req, res) => {
 // 품질기준 변경
 router.post("/qstdupdate", async (req, res) => {
   try {
+    console.log("Received data:", req.body);
     const result = await qualityService.updateQstd(req.body);
-
-    if (!result || (result.affectedRows ?? 0) === 0) {
-      return res.status(404).json({ ok: false, message: "대상 없음" });
-    }
     res.json({ ok: true, affected: result.affectedRows });
-    console.log(req.body);
   } catch (err) {
-    console.error(err);
+    console.error("Update error:", err);
     res.status(500).json({
       ok: false,
       message: err.sqlMessage || err.message,

@@ -96,9 +96,9 @@ const criteriaRows = ref([
   { _id: 'dimension', label: '치수정밀도', allow: '입고자재 ±2mm 이내', value: '' },
   { _id: 'strength', label: '강도/내구성', allow: '횡강도 35MPa 이상', value: '' },
   { _id: 'stability', label: '안정성', allow: '전도 없음, 전기부 안전, 모서리 등금 위험요소 없음', value: '' },
-  { _id: 'defects', label: '왼관 결점', allow: '옹이, 할렬, 긁힘 육안확인 시 결점이 없을 시', value: '' },
+  { _id: 'defects', label: '외관 결점', allow: '옹이, 할렬, 긁힘 육안확인 시 결점이 없을 시', value: '' },
   { _id: 'formaldehyde', label: '포름알데히드 방출률', allow: '친환경 E0 등급(0.3mg/L)이하', value: '' },
-  { _id: 'surface', label: '표면 마감/도장', allow: '도맏 들뜸 박리 없음, 균일한 색상 광택 유지', value: '' }
+  { _id: 'surface', label: '표면 마감/도장', allow: '도막 들뜸·박리 없음, 균일한 색상·광택 유지', value: '' }
 ]);
 
 const criteriaApi = shallowRef(null);
@@ -282,7 +282,8 @@ async function saveForm() {
         PRD_TYPE: d.prdType,
         TOTAL_QTY: d.totalQty,
         Q_CHECKED_DATE: d.certDate,
-        CREATED_BY: d.writer
+        CREATED_BY: d.writer,
+        RESULTS: results
       };
 
       console.log('[saveForm] POST /passprd', payload);
@@ -302,7 +303,8 @@ async function saveForm() {
         TOTAL_QTY: d.totalQty,
         Q_CHECKED_DATE: d.certDate,
         CREATED_BY: d.writer,
-        RJT_REASON: defectReason.value.description.trim()
+        RJT_REASON: defectReason.value.description.trim(),
+        RESULTS: results
       };
 
       console.log('[saveForm] POST /rejectprd', payload);

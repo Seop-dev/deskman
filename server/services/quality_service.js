@@ -49,6 +49,12 @@ const selectPrdCert = async () => {
   return list;
 };
 
+// 제품성적서조회 하단기준
+const selectPrdQstd = async () => {
+  let list = await mariadb.query("selectPrdCert");
+  return list;
+};
+
 // 합격제품등록
 const addPassPrd = async (b) => {
   const params = [
@@ -126,15 +132,24 @@ const selectQstd = async () => {
 };
 
 // 품질기준변경
-const rejectMatQstd = async (b) => {
+const updateQstd = async (b) => {
   const type = String(b.type ?? b.TYPE ?? b.STD_TYPE ?? "");
-  const stdName = String(b.stdName ?? b.STD_NAME ?? "");
+  const newStdName = String(b.stdName ?? b.STD_NAME ?? "");
   const allowedValue = String(b.allowedValue ?? b.ALLOWED_VALUE ?? "");
-  const params = {
-    type: type,
-    stdName: stdName,
-    allowedValue: allowedValue,
-  };
+  const originalStdName = String(
+    b.originalStdName ?? b.ORIGINAL_STD_NAME ?? newStdName
+  );
+
+  // SQL 파라미터 순서: SET STD_NAME = ?, ALLOWED_VALUE = ?, WHERE STD_TYPE = ?, AND STD_NAME = ?
+  const params = [newStdName, allowedValue, type, originalStdName];
+
+  console.log("Update params:", {
+    newStdName,
+    allowedValue,
+    type,
+    originalStdName,
+  });
+
   return await mariadb.query("UpdateQStandard", params);
 };
 
@@ -207,11 +222,12 @@ module.exports = {
   addRejectMat,
   selectTaskPrd,
   selectPrdCert,
+  selectPrdQstd,
   addPassPrd,
   addRejectPrd,
   selectQstd,
+  updateQstd,
   insertQstd,
   qcCommonCode,
   matCommonCode,
-  rejectMatQstd,
 };
