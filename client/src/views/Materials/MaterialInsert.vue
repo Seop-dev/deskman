@@ -60,6 +60,10 @@ import { themeQuartz } from 'ag-grid-community';
 import MoDal from '../common/NewModal.vue';
 import axios from 'axios';
 import { useAuthStore } from '@/stores/auth';
+//토스트
+import { useToast } from 'vue-toast-notification';
+import 'vue-toast-notification/dist/theme-bootstrap.css';
+const $toast = useToast();
 
 // 로그인한 세션의 정보들이 담김.
 const authStore = useAuthStore();
@@ -188,13 +192,13 @@ function resetForm() {
 async function submitForm() {
   try {
     if (!form.issueNumber || !form.insertDate || !form.manager || !form.name) {
-      alert('모든 필드를 입력해주세요.');
+      $toast.warning('모든 필드를 입력해주세요.', { position: 'top-right', duration: 2000 });
       return;
     }
 
     for (const row of rowData.value) {
       if ((row.입고수량 || 0) > (row.발주수량 || 0) - (row.업데이트수량 || 0)) {
-        alert(`자재 "${row.자재명}"의 입고수량이 발주수량보다 많을 수 없습니다.`);
+        $toast.warning(`자재 "${row.자재명}"의 입고수량이 발주수량보다 많을 수 없습니다.`, { position: 'top-right', duration: 2500 });
         return;
       }
     }
@@ -202,7 +206,7 @@ async function submitForm() {
     for (const row of rowData.value) {
       const status = row.자재유형 == '원자재' ? '검수 대기' : '완료';
 
-      // 1) MAT_IN_TMP에 등록 (모든 자재)
+      // 1) MAT_IN_TMP에 등록
       await axios.post('http://localhost:3000/materialInsert', {
         PO_NO: form.issueNumber,
         RECEIPT_DATE: form.insertDate,
@@ -225,11 +229,11 @@ async function submitForm() {
       }
     }
 
-    alert('등록 되었습니다.');
+    $toast.success('등록 되었습니다.', { position: 'top-right', duration: 1000 });
     resetForm();
   } catch (error) {
     console.error(error);
-    alert('등록 중 오류가 발생했습니다.' + error);
+    $toast.error('등록 중 오류가 발생했습니다: ' + error, { position: 'top-right', duration: 2000 });
   }
 }
 

@@ -54,6 +54,10 @@ import { themeQuartz } from 'ag-grid-community';
 import MoDal from '../common/NewModal.vue';
 import axios from 'axios';
 import { useAuthStore } from '@/stores/auth';
+// 토스트
+import { useToast } from 'vue-toast-notification';
+import 'vue-toast-notification/dist/theme-bootstrap.css';
+const $toast = useToast();
 
 // 로그인한 세션의 정보들이 담김.
 const authStore = useAuthStore();
@@ -132,7 +136,7 @@ const openModal = async (title) => {
     }
   } catch (error) {
     console.error('자재 목록을 가져오는 중 오류가 발생했습니다:' + error);
-    alert('자재 목록을 불러오는 데 실패했습니다.');
+    $toast.error('자재 목록을 불러오는 데 실패했습니다.', { position: 'top-right', duration: 2000 });
   }
 };
 
@@ -164,13 +168,13 @@ function resetForm() {
 async function submitForm() {
   try {
     if (!form.manager || !form.insertDate || !form.reDate) {
-      alert('모든 필드를 입력해주세요.');
+      $toast.warning('모든 필드를 입력해주세요.', { position: 'top-right', duration: 2000 });
       return;
     }
 
     // 1. 반품요청서 기본 데이터
     const requestData = {
-      CREATED_DATE: new Date().toISOString().slice(0, 10), // 오늘 날짜
+      CREATED_DATE: new Date().toISOString().slice(0, 10),
       RR_DATE: form.reDate,
       MANAGER: form.manager,
       RE_STATUS: '등록'
@@ -189,11 +193,11 @@ async function submitForm() {
       detailList
     });
 
-    alert('등록 되었습니다.');
+    $toast.success('등록 되었습니다.', { position: 'top-right', duration: 1500 });
     resetForm();
   } catch (error) {
     console.error(error);
-    alert('등록 중 오류가 발생했습니다.');
+    $toast.error('등록 중 오류가 발생했습니다.', { position: 'top-right', duration: 2000 });
   }
 }
 
