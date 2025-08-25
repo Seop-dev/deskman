@@ -33,31 +33,35 @@ app.listen(PORT, () => {
 });
 
 const boardRouter = require("./routers/board_router.js");
-app.use(boardRouter);
+app.use("/api", boardRouter);
 
 // 생산
 const productionRouter = require("./routers/production_router.js");
-app.use(productionRouter);
+app.use("/api", productionRouter);
 
 // 품질
 const qualityRouter = require("./routers/quality_router.js");
-app.use(qualityRouter);
+app.use("/api", qualityRouter);
 const MasterRouter = require("./routers/master_router.js");
-app.use(MasterRouter);
+app.use("/api", MasterRouter);
 const MaterialsRouter = require("./routers/materials_router.js");
-app.use(MaterialsRouter);
+app.use("/api", MaterialsRouter);
 
 //영업
 const marketingRouter = require("./routers/marketingRouter.js");
-app.use(marketingRouter);
+app.use("/api", marketingRouter);
 
 // f로그인
 const loginRouter = require("./routers/login_router.js");
-app.use("/", loginRouter);
+app.use("/api", loginRouter);
 
 //설비
 const FacilityRouter = require("./routers/facility_router.js");
-app.use(FacilityRouter);
+app.use("/api", FacilityRouter);
+
+//기준정보
+const kijunRouter = require("./routers/master_router.js");
+app.use("/api", kijunRouter);
 
 // vue.js build 이후
 
