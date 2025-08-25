@@ -155,7 +155,7 @@ const colDefs1 = ref([
 
 // 사원 리스트
 const empList = async () => {
-  const res = await axios.get('http://localhost:3000/masterEmp');
+  const res = await axios.get('/masterEmp');
   empData.value = res.data.map((emp) => ({
     사원번호: emp.EMP_NO,
     사원명: emp.EMP_NAME,
@@ -177,7 +177,7 @@ const authOptions = ref([]);
 const fetchCommonCodes = async () => {
   try {
     // 직급 공통코드 API 호출 (예시)
-    const authRes = await axios.get('http://localhost:3000/commonAuth');
+    const authRes = await axios.get('/commonAuth');
     authOptions.value = authRes.data.map((item) => item.code_name); // `code_name`을 배열에 담기
   } catch (error) {
     console.error('공통코드 데이터를 불러오는 데 실패했습니다:', error);
@@ -190,7 +190,7 @@ const searchData = async () => {
     return;
   }
   const params = { EMP_NAME: searchKeyword.value };
-  const res = await axios.post('http://localhost:3000/masterEmpName', params);
+  const res = await axios.post('/masterEmpName', params);
   empData.value = res.data.map((emp) => ({
     사원번호: emp.EMP_NO,
     사원명: emp.EMP_NAME,
@@ -223,7 +223,7 @@ const submitForm = async () => {
       EMP_EDATE: form.value.endDate?.trim() || null,
       EMP_NO: form.value.empNo
     };
-    const result = await axios.put('http://localhost:3000/masterEmpUpdate', updateRow);
+    const result = await axios.put('/masterEmpUpdate', updateRow);
     console.log(result.config.data);
     $toast.success(`${form.value.empName}의 정보가 수정되었습니다`, { position: 'top-right', duration: 1000 });
     empList();
@@ -244,7 +244,7 @@ const submitForm = async () => {
       EMP_HDATE: form.value.hireDate?.trim() || null,
       EMP_EDATE: form.value.endDate?.trim() || null
     };
-    const result = await axios.post('http://localhost:3000/masterEmpInsert', newRow);
+    const result = await axios.post('/masterEmpInsert', newRow);
     console.log(result.config.data);
     empList();
   }
@@ -268,7 +268,7 @@ const del = async () => {
   }
   const deleteRow = { empNo: selectedRows[0].사원번호 };
   console.log(deleteRow);
-  const result = await axios.delete('http://localhost:3000/masterEmpDelete', { data: deleteRow });
+  const result = await axios.delete('/masterEmpDelete', { data: deleteRow });
   $toast.success(`${form.value.empName}(이)가 삭제되었습니다.`);
   console.log(result);
   empList();
@@ -317,7 +317,7 @@ const materialRowData = ref([]);
 
 // 모달 조회
 const modalList = async () => {
-  const res = await axios.get('http://localhost:3000/commonDept');
+  const res = await axios.get('/commonDept');
   materialRowData.value = res.data.map((prd) => ({
     그룹코드: prd.group_code,
     부서명: prd.code_name

@@ -78,7 +78,7 @@ const openModal = async (title) => {
   modalColDefs.value = materialColDefs;
 
   try {
-    const res = await axios.get('http://localhost:3000/materials');
+    const res = await axios.get('/materials');
     modalRowData.value = res.data.map((mat) => ({
       자재코드: mat.MAT_CODE,
       자재명: mat.MAT_NAME,
@@ -129,7 +129,7 @@ const rowData = ref([]);
 // 불량품 목록 불러오기 - 수정해야함
 onMounted(async () => {
   try {
-    const res = await axios.get('http://localhost:3000/failMaterials');
+    const res = await axios.get('/failMaterials');
     rowData.value = res.data.map((item) => ({
       입고번호: item.RECEIPT_NO,
       자재명: item.MAT_NAME,

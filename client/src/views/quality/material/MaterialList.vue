@@ -137,7 +137,7 @@ function fmtDate(d: any): string {
 
 const getMaterialList = async () => {
   try {
-    const { data } = await axios.get('http://localhost:3000/matmng');
+    const { data } = await axios.get('/matmng');
 
     if (Array.isArray(data) && data.length > 0) {
       rowData.value = data.map((item: any): Row => {
@@ -236,7 +236,7 @@ const statusOptions = ref<StatusOption[]>([]);
 // 처리상태 옵션 불러오기 (기존 함수는 제거하고 getMatStatus 사용)
 const getStatusOptions = async () => {
   try {
-    const result = await axios.get('http://localhost:3000/matcommon');
+    const result = await axios.get('/matcommon');
     if (result.data && result.data.length > 0) {
       statusOptions.value = [
         { label: '입고', value: '' }, // 필터 초기값

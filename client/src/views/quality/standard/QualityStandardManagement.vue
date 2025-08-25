@@ -280,7 +280,7 @@ const saveForm = async () => {
 
     for (const payload of updates) {
       console.log('Sending payload:', payload);
-      const response = await axios.post('http://localhost:3000/qstdupdate', payload);
+      const response = await axios.post('/qstdupdate', payload);
       console.log('Server response:', response.data);
     }
 
@@ -325,7 +325,7 @@ watch(
 // 초기 데이터 로드
 const qcStandard = async () => {
   try {
-    const url = 'http://localhost:3000/qstdlist';
+    const url = '/qstdlist';
     const { data } = await axios.get(url);
 
     console.log('Received data:', data);

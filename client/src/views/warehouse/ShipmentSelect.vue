@@ -115,7 +115,7 @@ const onCellValueChanged = (event) => {
 };
 const allData = ref([]);
 const wrShip = async () => {
-  const res = await axios.get('http://localhost:3000/wrShip');
+  const res = await axios.get('/wrShip');
   allData.value = res.data.map((emp) => ({
     출하번호: emp.SHIP_NO,
     창고명: emp.WR_NAME,
@@ -157,8 +157,8 @@ const scrap = async () => {
     PRD_NAME: r.제품명,
     PRD_LOT: r.LOT번호
   }));
-  const res = await axios.post('http://localhost:3000/wrShipUpdate', payload);
-  const res2 = await axios.post('http://localhost:3000/wrShipUpdate2', payload2);
+  const res = await axios.post('/wrShipUpdate', payload);
+  const res2 = await axios.post('/wrShipUpdate2', payload2);
   console.log(res);
   console.log(res2);
   alert('출하 처리가 완료되었습니다.');
@@ -182,7 +182,7 @@ const openModal = async (title) => {
     alert('행을 선택해주세요');
     return;
   }
-  const res = await axios.get('http://localhost:3000/wrDelivery');
+  const res = await axios.get('/wrDelivery');
   materialRowData1.value = res.data.map((r) => ({
     거래처유형: r.CUS_TYPE,
     거래처명: r.CUS_NAME,

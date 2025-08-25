@@ -121,7 +121,7 @@ const openModal = async (title) => {
   if (title == '자재 조회') {
     modalColDefs.value = materialColDefs2;
 
-    const res = await axios.get('http://localhost:3000/materials');
+    const res = await axios.get('/materials');
     modalRowData.value = res.data.map((mat) => ({
       자재코드: mat.MAT_CODE,
       자재명: mat.MAT_NAME,
@@ -132,7 +132,7 @@ const openModal = async (title) => {
   } else if (title == '자재발주서 조회') {
     modalColDefs.value = materialColDefs;
 
-    const res = await axios.get('http://localhost:3000/materials/order/select');
+    const res = await axios.get('/materials/order/select');
     console.log(res.data);
     modalRowData.value = res.data.map((item) => ({
       발행번호: item.PO_NO,
@@ -182,7 +182,7 @@ const rowData = ref([]);
 
 onMounted(async () => {
   try {
-    const res = await axios.get('http://localhost:3000/materials/order/select');
+    const res = await axios.get('/materials/order/select');
     console.log(res.data);
     // 응답 데이터 바로 rowData에 할당
     rowData.value = res.data.map((item) => ({
@@ -250,7 +250,7 @@ const fileSelect = async () => {
       status: status.value || null
     };
 
-    const res = await axios.post('http://localhost:3000/orderSearch', params);
+    const res = await axios.post('/orderSearch', params);
 
     rowData.value = res.data.map((item) => ({
       발행번호: item.PO_NO,

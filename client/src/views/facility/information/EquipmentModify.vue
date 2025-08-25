@@ -95,7 +95,7 @@ ModuleRegistry.registerModules([AllCommunityModule]);
 const quartz = themeQuartz;
 
 /* API */
-const API_BASE = 'http://localhost:3000';
+const API_BASE = import.meta?.env?.VITE_API_URL || 'http://localhost:3000';
 const LIST_URL = `${API_BASE}/facility`; // 설비 기본 목록
 const UPDATE_URL = `${API_BASE}/facilityUpdate`;
 const PROCESS_API = `${API_BASE}/process`;

@@ -74,7 +74,7 @@ const search = ref({
 // /qstdlist 한 번만 호출해서 드롭다운 + 그리드 원본 구성
 const getQStandardList = async () => {
   try {
-    const url = 'http://localhost:3000/qstdlist';
+    const url = '/qstdlist';
     const { data } = await axios.get(url);
     const rows = (data || []).map((item) => ({
       type: item.std_type ?? item.CODE_NAME ?? item.code_name, // 제품 구분

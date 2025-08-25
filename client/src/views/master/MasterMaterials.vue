@@ -147,7 +147,7 @@ const onCellValueChanged = (event) => {
 
 // 제품 리스트
 const matList = async () => {
-  const res = await axios.get('http://localhost:3000/masterMatSelect');
+  const res = await axios.get('/masterMatSelect');
   rowData1.value = res.data.map((prd) => ({
     자재코드: prd.MAT_CODE,
     자재명: prd.MAT_NAME,
@@ -165,11 +165,11 @@ const matList = async () => {
 const unitOptions = ref([]);
 const typeOptions = ref([]);
 const unitList = async () => {
-  const unitRes = await axios.get('http://localhost:3000/masterMatUnit');
+  const unitRes = await axios.get('/masterMatUnit');
   unitOptions.value = unitRes.data.map((prd) => prd.code_name);
 };
 const typeList = async () => {
-  const typeRes = await axios.get('http://localhost:3000/masterMatType');
+  const typeRes = await axios.get('/masterMatType');
   typeOptions.value = typeRes.data.map((prd) => prd.code_name);
 };
 
@@ -189,7 +189,7 @@ const submitForm = async () => {
         MAT_NOTE: form.value.note,
         MAT_CODE: form.value.matCode
       };
-      await axios.post('http://localhost:3000/masterMatUpdate', updateRow);
+      await axios.post('/masterMatUpdate', updateRow);
       $toast.success('자재가 수정되었습니다.', { position: 'top-right', duration: 1000 });
     } else {
       // 신규 등록
@@ -213,7 +213,7 @@ const submitForm = async () => {
         MAT_DATE: form.value.date,
         MAT_NOTE: form.value.note
       };
-      await axios.post('http://localhost:3000/masterMatInsert', newRow);
+      await axios.post('/masterMatInsert', newRow);
       $toast.success('자재가 등록되었습니다.', { position: 'top-right', duration: 1000 });
     }
     matList();
@@ -267,7 +267,7 @@ const materialRowData = ref([]);
 
 // 모달 조회
 const modalList = async () => {
-  const res = await axios.get('http://localhost:3000/masterMatModal');
+  const res = await axios.get('/masterMatModal');
   materialRowData.value = res.data.map((prd) => ({
     그룹코드: prd.group_code,
     규격: prd.code_name,
@@ -296,7 +296,7 @@ const del = async () => {
     return;
   }
   try {
-    await axios.post('http://localhost:3000/masterMatDelete', { MAT_CODE: form.value.matCode });
+    await axios.post('/masterMatDelete', { MAT_CODE: form.value.matCode });
     $toast.success(`${form.value.matName}(이)가 삭제되었습니다.`, { position: 'top-right', duration: 1000 });
     matList();
     resetForm();
@@ -312,7 +312,7 @@ const searchData = async () => {
     return;
   }
   const condition = { MAT_NAME: searchKeyword.value };
-  const res = await axios.post('http://localhost:3000/masterMatSearch', condition);
+  const res = await axios.post('/masterMatSearch', condition);
   rowData1.value = res.data.map((prd) => ({
     자재코드: prd.MAT_CODE,
     자재명: prd.MAT_NAME,

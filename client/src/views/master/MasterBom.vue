@@ -170,7 +170,7 @@ const breadcrumbs = shallowRef([
 // 제품 조회
 const prdList = async () => {
   try {
-    const res = await axios.get('http://localhost:3000/BOMprdSelect');
+    const res = await axios.get('/BOMprdSelect');
     prdData.value = res.data.map((prd) => ({
       제품명: prd.PRD_NAME,
       제품코드: prd.PRD_CODE,
@@ -191,7 +191,7 @@ const matList = async () => {
     BOM_VER: form.value.bomVer
   };
   try {
-    const res = await axios.post('http://localhost:3000/BOM_detailSelect', condition);
+    const res = await axios.post('/BOM_detailSelect', condition);
     matData.value = res.data.map((prd) => ({
       자재코드: prd.MAT_CODE,
       자재명: prd.MAT_NAME,
@@ -224,7 +224,7 @@ const searchData = async () => {
   }
   const condition = { PRD_NAME: searchKeyword.value };
   try {
-    const res = await axios.post('http://localhost:3000/bomSearch', condition);
+    const res = await axios.post('/bomSearch', condition);
     prdData.value = res.data.map((prd) => ({
       제품명: prd.PRD_NAME,
       제품코드: prd.PRD_CODE,
@@ -260,7 +260,7 @@ const selectedBomVer = ref(null);
 
 const bomList = async (condition) => {
   try {
-    const res = await axios.post('http://localhost:3000/BOMbomSelect', condition);
+    const res = await axios.post('/BOMbomSelect', condition);
     bomData.value = res.data.map((prd) => ({
       BOM코드: prd.BOM_CODE,
       제품명: prd.PRD_NAME,
@@ -278,7 +278,7 @@ const onRowClicked1 = async (e) => {
   form.value.prdName = e.data.제품명;
   const condition = { PRD_CODE: e.data.제품코드 };
   try {
-    const res = await axios.post('http://localhost:3000/BOMbomSelect', condition);
+    const res = await axios.post('/BOMbomSelect', condition);
     bomData.value = res.data.map((prd) => ({
       BOM코드: prd.BOM_CODE,
       제품명: prd.PRD_NAME,
@@ -311,7 +311,7 @@ const submitForm = async () => {
   };
   console.log(selectedBomVer.value);
   try {
-    const res = await axios.post('http://localhost:3000/BOMinsert', condition);
+    const res = await axios.post('/BOMinsert', condition);
     console.log(res);
     const reloadCondition = { PRD_CODE: selectedProduct.value.제품코드 };
     await bomList(reloadCondition);
@@ -347,7 +347,7 @@ const upMat = async () => {
   const matCodes = selectedRows.map((r) => r.자재코드);
   const qtys = selectedRows.map((r) => r.소요수량);
   try {
-    await axios.post('http://localhost:3000/bomMatUpdate', {
+    await axios.post('/bomMatUpdate', {
       bomCode: form.value.bomCode,
       matCodes,
       qtys
@@ -370,7 +370,7 @@ const delMat = async () => {
   const deleteRow = { BOM_CODE: form.value.bomCode, MAT_CODE: selectedRows[0].자재코드 };
   console.log(deleteRow);
   try {
-    await axios.post('http://localhost:3000/bomDelete', deleteRow);
+    await axios.post('/bomDelete', deleteRow);
     $toast.success('삭제가 완료되었습니다.', { position: 'top-right', duration: 1000 });
     await matList();
   } catch (error) {
@@ -396,7 +396,7 @@ const materialRowData = ref([]);
 // 모달 조회
 const modalList = async () => {
   try {
-    const res = await axios.get('http://localhost:3000/BOMmodalSelect');
+    const res = await axios.get('/BOMmodalSelect');
     materialRowData.value = res.data.map((prd) => ({
       자재코드: prd.MAT_CODE,
       자재명: prd.MAT_NAME,
@@ -442,7 +442,7 @@ const modalConfirm = async (selectedRow) => {
         return;
       }
     }
-    const res = await axios.post('http://localhost:3000/BOMmodalConfirm', confirmRow);
+    const res = await axios.post('/BOMmodalConfirm', confirmRow);
     console.log(res);
     $toast.success('자재가 성공적으로 추가되었습니다!', { position: 'top-right', duration: 1000 });
     await matList();

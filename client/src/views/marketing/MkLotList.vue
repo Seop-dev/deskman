@@ -49,7 +49,7 @@ onMounted(() => {
   LotList();
 });
 const LotList = async () => {
-  const res = await axios.get('http://localhost:3000/lotSelect');
+  const res = await axios.get('/lotSelect');
   console.log(res);
   rowData1.value = res.data.map((prd) => ({
     입고번호: prd.RECEIVED_NO,

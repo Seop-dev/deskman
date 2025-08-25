@@ -179,7 +179,7 @@ const materialRowData = ref([]);
 
 // 모달 조회
 const modalList = async () => {
-  const res = await axios.get('http://localhost:3000/wrModalSelect');
+  const res = await axios.get('/wrModalSelect');
   materialRowData.value = res.data.map((prd) => ({
     창고번호: prd.WR_NO,
     창고명: prd.WR_NAME,
@@ -208,7 +208,7 @@ const modalConfirm = async (selectedRow) => {
 //전체조회
 async function wrInfo() {
   const condition = { WR_NO: form.value.wrNo };
-  const res = await axios.post('http://localhost:3000/wrSelect', condition);
+  const res = await axios.post('/wrSelect', condition);
   rowData1.value = res.data.map((prd) => ({
     구역번호: prd.WR_AREANO,
     섹션코드: prd.WR_SECTION,
@@ -248,7 +248,7 @@ const pmModal = (title, rowData, colDefs) => {
 
 // 모달 조회
 const PMmodalList = async () => {
-  const res = await axios.get('http://localhost:3000/InfoModal');
+  const res = await axios.get('/InfoModal');
   materialRowData1.value = res.data.map((prd) => ({
     품목코드: prd.code,
     품목유형: prd.code_name
@@ -301,7 +301,7 @@ const submitForm = async () => {
         WR_TYPE: form.value.type,
         WR_NO: form.value.wrNo
       };
-      await axios.post('http://localhost:3000/wrInfoUpdate', updateRow);
+      await axios.post('/wrInfoUpdate', updateRow);
       $toast.success('창고가 수정되었습니다.', { position: 'top-right', duration: 1000 });
       await wrInfo();
     } else {
@@ -312,7 +312,7 @@ const submitForm = async () => {
         WR_TYPE: form.value.type,
         WR_NO: form.value.wrNo
       };
-      await axios.post('http://localhost:3000/wrInfoInsert', newRow);
+      await axios.post('/wrInfoInsert', newRow);
       $toast.success('구역이 추가되었습니다.', { position: 'top-right', duration: 1000 });
       await wrInfo();
     }
@@ -333,7 +333,7 @@ const del = async () => {
   const deleteRow = { WR_SECTION: selectedRows[0].섹션코드 };
 
   if (confirm('구역을 삭제하시겠습니까?')) {
-    await axios.post('http://localhost:3000/wrDelete', deleteRow);
+    await axios.post('/wrDelete', deleteRow);
     $toast.success('삭제 완료', { position: 'top-right', duration: 1000 });
     await wrInfo();
     resetForm();

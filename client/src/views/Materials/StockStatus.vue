@@ -95,7 +95,7 @@ const openModal = async (title) => {
   modalColDefs.value = materialColDefs;
 
   try {
-    const res = await axios.get('http://localhost:3000/materials');
+    const res = await axios.get('/materials');
     modalRowData.value = res.data.map((mat) => ({
       자재코드: mat.MAT_CODE,
       자재명: mat.MAT_NAME,
@@ -147,7 +147,7 @@ const colDefs = ref([
 const rowData = ref([]);
 onMounted(async () => {
   try {
-    const res = await axios.get('http://localhost:3000/stockStatus');
+    const res = await axios.get('/stockStatus');
     // 응답 데이터 바로 rowData에 할당
     rowData.value = res.data.map((item) => ({
       LOT번호: item.LOT_NO,

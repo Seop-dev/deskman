@@ -110,7 +110,7 @@ const criteriaRows = ref([
 // DB에서 데이터 가져오기
 // const getQStandardList = async () => {
 //   try {
-//     const url = 'http://localhost:3000/qstdlist';
+//     const url = '/qstdlist';
 
 //     const result = await axios.get(url);
 
@@ -307,16 +307,16 @@ async function saveForm() {
   };
 
   if (isPass) {
-    await axios.post('http://localhost:3000/passmat', passData);
+    await axios.post('/passmat', passData);
     $toast.info('합격등록이 완료되었습니다.', { position: 'top-right', duration: 1000 });
-    await axios.post('http://localhost:3000/chmatstatus', {
+    await axios.post('/chmatstatus', {
       RECEIPT_NO: passData.RECEIPT_NO
     });
     router.push('/qm/matlst');
   } else {
-    await axios.post('http://localhost:3000/rejectmat', rjtData);
+    await axios.post('/rejectmat', rjtData);
     $toast.info('불합격등록이 완료되었습니다.', { position: 'top-right', duration: 1000 });
-    await axios.post('http://localhost:3000/chmatstatus', {
+    await axios.post('/chmatstatus', {
       RECEIPT_NO: passData.RECEIPT_NO
     });
     router.push('/qm/matlst');

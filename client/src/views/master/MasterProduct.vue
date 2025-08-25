@@ -154,7 +154,7 @@ onMounted(() => {
 });
 
 const prdList = async () => {
-  const res = await axios.get('http://localhost:3000/masterPrdSelect');
+  const res = await axios.get('/masterPrdSelect');
   rowData1.value = res.data.map((prd) => ({
     제품코드: prd.PRD_CODE,
     제품명: prd.PRD_NAME,
@@ -169,11 +169,11 @@ const prdList = async () => {
 };
 
 const unitList = async () => {
-  const res = await axios.get('http://localhost:3000/masterPrdUnit');
+  const res = await axios.get('/masterPrdUnit');
   unitOptions.value = res.data.map((prd) => prd.code_name);
 };
 const typeList = async () => {
-  const res = await axios.get('http://localhost:3000/masterPrdType');
+  const res = await axios.get('/masterPrdType');
   typeOptions.value = res.data.map((prd) => prd.code_name);
 };
 
@@ -195,7 +195,7 @@ const submitForm = async () => {
       PRD_NOTE: form.value.note,
       PRD_CODE: form.value.prdCode
     };
-    await axios.post('http://localhost:3000/masterPrdUpdate', updateRow);
+    await axios.post('/masterPrdUpdate', updateRow);
     $toast.success('제품이 수정되었습니다.', { position: 'top-right', duration: 1000 });
   } else {
     const exists = rowData1.value.find((p) => p.제품명 === form.value.prdName);
@@ -214,7 +214,7 @@ const submitForm = async () => {
       PRD_DATE: form.value.date,
       PRD_NOTE: form.value.note
     };
-    await axios.post('http://localhost:3000/masterPrdInsert', newRow);
+    await axios.post('/masterPrdInsert', newRow);
     $toast.success('제품이 등록되었습니다.', { position: 'top-right', duration: 1000 });
   }
 
@@ -230,7 +230,7 @@ const del = async () => {
   if (!confirm(`${selectedRows.map((r) => r.제품명).join(', ')}을 삭제하시겠습니까?`)) return;
 
   const prdCode = selectedRows.map((r) => r.제품코드);
-  await axios.post('http://localhost:3000/masterPrdDelete', { prdCode });
+  await axios.post('/masterPrdDelete', { prdCode });
   await prdList();
   $toast.success('제품이 삭제되었습니다.', { position: 'top-right', duration: 1000 });
 };
@@ -242,7 +242,7 @@ const searchData = async () => {
     return;
   }
   const condition = { PRD_NAME: searchKeyword.value };
-  const res = await axios.post('http://localhost:3000/masterPrdSearch', condition);
+  const res = await axios.post('/masterPrdSearch', condition);
   rowData1.value = res.data.map((prd) => ({
     제품코드: prd.PRD_CODE,
     제품명: prd.PRD_NAME,
@@ -289,7 +289,7 @@ const onGridReadyMat = (params) => {
 };
 
 const modalList = async () => {
-  const res = await axios.get('http://localhost:3000/masterPrdModal');
+  const res = await axios.get('/masterPrdModal');
   materialRowData.value = res.data.map((prd) => ({
     그룹코드: prd.group_code,
     규격: prd.code_name,

@@ -127,7 +127,7 @@ const rowData = ref([]);
 // db연결
 const getPrdList = async () => {
   try {
-    const result = await axios.get('http://localhost:3000/prdcertlist');
+    const result = await axios.get('/prdcertlist');
 
     // DB 응답 데이터를 rowData에 매핑
     if (result.data.length > 0) {

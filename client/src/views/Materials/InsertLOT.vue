@@ -90,7 +90,7 @@ const openModal = async (title) => {
   modalColDefs.value = materialColDefs;
 
   try {
-    const res = await axios.get('http://localhost:3000/materialPass');
+    const res = await axios.get('/materialPass');
     modalRowData.value = res.data.map((mat) => ({
       입고번호: mat.RECEIPT_NO,
       자재명: mat.MAT_NAME,
@@ -159,7 +159,7 @@ async function submitForm() {
   try {
     // row별로 LOT 등록 요청
     rowData.value.map((row) => {
-      return axios.post('http://localhost:3000/LOTInsert', {
+      return axios.post('/LOTInsert', {
         MAT_CODE: row.자재코드,
         MANAGER: manager.value,
         MAT_QTY: row.합격수량,
@@ -172,7 +172,7 @@ async function submitForm() {
 
     await Promise.all(
       uniqueReceiptNos.map((receiptNo) => {
-        return axios.put('http://localhost:3000/updateTMP', {
+        return axios.put('/updateTMP', {
           RECEIPT_NO: receiptNo,
           STATUS: '입고 완료'
         });

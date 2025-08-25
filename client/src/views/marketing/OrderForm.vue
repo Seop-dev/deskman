@@ -155,7 +155,7 @@ const materialRowData = ref([]);
 
 const modalList = async () => {
   try {
-    const res = await axios.get('http://localhost:3000/reqCusModal');
+    const res = await axios.get('/reqCusModal');
     materialRowData.value = res.data.map((prd) => ({
       거래처코드: prd.CUS_ID,
       거래처명: prd.CUS_NAME,
@@ -198,7 +198,7 @@ const itemRowData = ref([]);
 
 const modalList2 = async () => {
   try {
-    const res = await axios.get('http://localhost:3000/reqPrdModal');
+    const res = await axios.get('/reqPrdModal');
     itemRowData.value = res.data.map((prd) => ({
       제품코드: prd.PRD_CODE,
       제품명: prd.PRD_NAME,
@@ -267,7 +267,7 @@ const submit = async () => {
       REQ_DDAY: order.value.dDay,
       WRITER: order.value.writer
     };
-    const res = await axios.post('http://localhost:3000/reqInsert', condition);
+    const res = await axios.post('/reqInsert', condition);
     if (!res.data?.success) {
       $toast.error('주문서(헤더) 등록 실패', { position: 'top-right', duration: 1000 });
       return;
@@ -282,7 +282,7 @@ const submit = async () => {
         PRD_CODE: r.제품코드
       }))
     };
-    const res2 = await axios.post('http://localhost:3000/reqDetailInsert', payload);
+    const res2 = await axios.post('/reqDetailInsert', payload);
     if (!res2.data?.success) {
       $toast.error('주문서(상세) 등록 실패', { position: 'top-right', duration: 1000 });
       return;
