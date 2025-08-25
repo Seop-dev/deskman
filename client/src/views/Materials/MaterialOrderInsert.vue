@@ -49,10 +49,12 @@ import { themeQuartz } from 'ag-grid-community';
 import MoDal from '../common/NewModal.vue';
 import axios from 'axios';
 import { useAuthStore } from '@/stores/auth';
+import { useToast } from 'vue-toast-notification';
+import 'vue-toast-notification/dist/theme-bootstrap.css';
+const $toast = useToast();
 
 // 로그인한 세션의 정보들이 담김.
 const authStore = useAuthStore();
-
 const quartz = themeQuartz;
 
 // ----------------- 그리드 데이터 (독립) -----------------
@@ -141,15 +143,15 @@ function resetForm() {
 async function submitForm() {
   try {
     if (!form.supplier || !form.manager || !form.orderDate || !form.dueDate) {
-      alert('모든 필드를 입력해주세요.');
+      $toast.warning('모든 필드를 입력해주세요.', { position: 'top-right', duration: 2000 });
       return;
     }
     if (rowData.value.length === 0) {
-      alert('자재를 선택해주세요.');
+      $toast.warning('자재를 선택해주세요.', { position: 'top-right', duration: 2000 });
       return;
     }
 
-    // 1. 발주서 데이터 (PO_NO는 Node에서 생성)
+    // 1. 발주서 데이터
     const orderData = {
       SUPPLYER: form.supplier,
       ORDER_DATE: form.orderDate,
@@ -170,11 +172,11 @@ async function submitForm() {
       detailList
     });
 
-    alert('등록 되었습니다.');
+    $toast.success('등록 성공', { position: 'top-right', duration: 1000 });
     resetForm();
   } catch (error) {
     console.error(error);
-    alert('등록 중 오류가 발생했습니다.');
+    $toast.error('등록 중 오류가 발생했습니다.', { position: 'top-right', duration: 2000 });
   }
 }
 
