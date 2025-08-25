@@ -11,7 +11,6 @@ export const PROCESS_LIST = [
 ];
 
 export const EQ = { AVAILABLE: 'AVAILABLE', IN_USE: 'IN_USE', MAINT: 'MAINT' };
-const API = import.meta?.env?.VITE_API_URL || 'http://localhost:3000';
 
 const ROUTES = {
   start: '/workexec/start',
@@ -111,7 +110,7 @@ export const useProcessSimStore = defineStore('process-sim', () => {
   async function loadWorkers() {
     workers.splice(0, workers.length);
     // ✅ 부서 파라미터 ‘생산’로 전달
-    const res = await safeGet(`${API}${ROUTES.workers}`, { params: { dept: '생산' } });
+    const res = await safeGet(`${ROUTES.workers}`, { params: { dept: '생산' } });
     (res?.data?.rows || []).forEach((r) =>
       workers.push({
         id: r.id,
@@ -127,7 +126,7 @@ export const useProcessSimStore = defineStore('process-sim', () => {
   /* -------- 지시/상태 로드 -------- */
   async function loadOrders({ page = 1, size = 100 } = {}) {
     orders.splice(0, orders.length);
-    const res = await safeGet(`${API}${ROUTES.orders}`, { params: { kw: '', page, size } });
+    const res = await safeGet(`${ROUTES.orders}`, { params: { kw: '', page, size } });
     const rows = res?.data?.rows;
 
     if (Array.isArray(rows) && rows.length) {
@@ -143,7 +142,7 @@ export const useProcessSimStore = defineStore('process-sim', () => {
           processes: procInitFor(r.productType || '완제품')
         };
 
-        const st = await safeGet(`${API}${ROUTES.orderState(r.id)}`).then((x) => x.data?.rows || []);
+        const st = await safeGet(`${ROUTES.orderState(r.id)}`).then((x) => x.data?.rows || []);
         st.forEach((row) => {
           const p = item.processes[row.process_code];
           if (!p) return;
@@ -195,7 +194,7 @@ export const useProcessSimStore = defineStore('process-sim', () => {
       startAt: payload.startAt
     };
 
-    const resp = await safePost(`${API}${ROUTES.start}`, body);
+    const resp = await safePost(`${ROUTES.start}`, body);
     const data = resp?.data || {};
     if (data?.ok === false) return data;
 
@@ -231,7 +230,7 @@ export const useProcessSimStore = defineStore('process-sim', () => {
       addDone: Number(payload.inputQty || 0)
     };
 
-    const resp = await safePost(`${API}${ROUTES.finish}`, body);
+    const resp = await safePost(`${ROUTES.finish}`, body);
     const data = resp?.data || {};
     if (data?.ok === false) return data;
 

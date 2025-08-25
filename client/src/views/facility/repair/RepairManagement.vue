@@ -73,14 +73,6 @@ const $toast = useToast();
 ModuleRegistry.registerModules([AllCommunityModule]);
 const quartz = themeQuartz;
 
-/* ✅ axios 인스턴스: 환경변수 기반 baseURL */
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE || ''
-});
-
-/* ✅ API 상대경로 */
-const PROCESS_API = '/process';
-
 const page = ref({ title: '설비 수리관리' });
 const breadcrumbs = shallowRef([
   { title: '설비', disabled: true, href: '#' },
@@ -91,7 +83,7 @@ const breadcrumbs = shallowRef([
 let fcMap = new Map();
 let rrMap = new Map();
 const preloadCodeMaps = async () => {
-  const [fcRes, rrRes] = await Promise.all([api.get('/common/codes/FC'), api.get('/common/codes/RR')]);
+  const [fcRes, rrRes] = await Promise.all([axios.get('/common/codes/FC'), axios.get('/common/codes/RR')]);
   const toMap = (rows) =>
     (rows || []).reduce((m, r) => {
       m.set(String(r.code ?? r.CODE), r.code_name ?? r.CODE_NAME);
@@ -132,8 +124,8 @@ const columnDefs = ref([
 const defaultColDef = { editable: false, sortable: true, resizable: true };
 
 // DB 조회
-const fetchFacilities = async () => (await api.get('/facility')).data || [];
-const fetchStatusList = async () => (await api.get('/facility/status')).data || [];
+const fetchFacilities = async () => (await axios.get('/facility')).data || [];
+const fetchStatusList = async () => (await axios.get('/facility/status')).data || [];
 
 // 데이터 생성
 const rows = ref([]);
@@ -230,7 +222,7 @@ const completeRepair = async () => {
   form.repairEnd = endAt;
 
   try {
-    await api.patch('/facility/status/end', {
+    await axios.patch('/facility/status/end', {
       FS_ID: form._fsId,
       endTime: endAt,
       restoreStatus: 0,
@@ -280,7 +272,7 @@ const mapProcess = (r) => ({
 });
 
 const fetchProcessList = async () => {
-  const { data } = await api.get(PROCESS_API);
+  const { data } = await axios.get('/process');
   return (Array.isArray(data) ? data : []).map(mapProcess);
 };
 

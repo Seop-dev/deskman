@@ -90,23 +90,12 @@ const $toast = useToast();
 ModuleRegistry.registerModules([AllCommunityModule]);
 const quartz = themeQuartz;
 
-/* axios 인스턴스: 환경변수 baseURL 사용 */
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || ''
-});
-
-/* API 상대경로 */
-const LIST_URL = '/facility'; // 설비 기본 목록
-const UPDATE_URL = '/facilityUpdate';
-const PROCESS_API = '/process';
-const CODES_FC = '/common/codes/FC'; // 설비유형 코드/라벨
-
 /* 코드 라벨 맵/아이템 */
 const FC_LABEL = ref({});
 const fcItems = ref([]);
 const buildLabelMap = (rows) => (Array.isArray(rows) ? rows : []).reduce((m, r) => ((m[r.code] = r.code_name ?? r.code), m), {});
 const preloadFC = async () => {
-  const { data } = await api.get(CODES_FC);
+  const { data } = await axios.get('/common/codes/FC');
   fcItems.value = Array.isArray(data) ? data : [];
   FC_LABEL.value = buildLabelMap(fcItems.value);
 };
@@ -169,7 +158,7 @@ const mapRow = (r) => ({
 
 /* 목록 */
 const fetchList = async () => {
-  const { data } = await api.get(LIST_URL);
+  const { data } = await axios.get('/facility');
   rows.value = (Array.isArray(data) ? data : []).map(mapRow);
   if (processCode.value) applyProcessFilter(processCode.value);
 };
@@ -230,7 +219,7 @@ const saveEdit = async () => {
   };
 
   try {
-    const res = await api.put(UPDATE_URL, payload, { headers: { 'Content-Type': 'application/json' } });
+    const res = await axios.put('/facilityUpdate', payload, { headers: { 'Content-Type': 'application/json' } });
     if (res.status === 200) {
       $toast.success('수정 되었습니다', { position: 'top-right', duration: 1000 });
       await fetchList();
@@ -265,7 +254,7 @@ const mapProcess = (r) => ({
   비고: r.PRC_NOTE ?? ''
 });
 const fetchProcessList = async () => {
-  const { data } = await api.get(PROCESS_API);
+  const { data } = await axios.get('/process');
   return (Array.isArray(data) ? data : []).map(mapProcess);
 };
 const openModal = async (title) => {
