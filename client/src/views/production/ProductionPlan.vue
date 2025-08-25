@@ -133,8 +133,6 @@ import BaseBreadcrumb from '@/components/shared/BaseBreadcrumb.vue';
 import UiParentCard from '@/components/shared/UiParentCard.vue';
 import { AgGridVue } from 'ag-grid-vue3';
 
-const API = import.meta?.env?.VITE_API_URL;
-
 /* 헤더 */
 const pageMeta = ref({ title: '생산계획 관리' });
 const breadcrumbs = shallowRef([
@@ -174,7 +172,7 @@ const PROD_PAGE_SIZE = 5;
 
 async function fetchProducts() {
   try {
-    const { data } = await axios.get(`${API}/products`, { params: { kw: productKeyword.value, page: 1, size: 50 } });
+    const { data } = await axios.get(`/products`, { params: { kw: productKeyword.value, page: 1, size: 50 } });
     products.value = Array.isArray(data?.rows) ? data.rows : [];
   } catch (e) {
     console.error(e);
@@ -250,7 +248,7 @@ const selectedOrderIds = ref([]); // ✅ 추가
 
 async function fetchOrders() {
   try {
-    const { data } = await axios.get(`${API}/reqSelect`);
+    const { data } = await axios.get(`/reqSelect`);
     orders.value = Array.isArray(data) ? data.map((r) => ({ ...r, REQ_QTY: Number(r.REQ_QTY) })) : [];
   } catch (e) {
     console.error(e);
@@ -357,7 +355,7 @@ async function savePlan() {
   }
 
   try {
-    const { data } = await axios.post(`${API}/plans`, {
+    const { data } = await axios.post(`/plans`, {
       form: form.value,
       linkedOrderIds: selectedOrderIds.value
     });
@@ -375,7 +373,7 @@ async function savePlan() {
 
 async function fetchPlanList() {
   try {
-    const { data } = await axios.get(`${API}/plans`, { params: { kw: '', page: 1, size: 20 } });
+    const { data } = await axios.get(`/plans`, { params: { kw: '', page: 1, size: 20 } });
     if (data?.ok) console.log('생산계획 목록', data.rows);
   } catch (e) {
     console.error(e);

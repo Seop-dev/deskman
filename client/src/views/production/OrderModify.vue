@@ -169,8 +169,6 @@ import BaseBreadcrumb from '@/components/shared/BaseBreadcrumb.vue';
 import UiParentCard from '@/components/shared/UiParentCard.vue';
 import { AgGridVue } from 'ag-grid-vue3';
 
-const API = import.meta?.env?.VITE_API_URL;
-
 const page = ref({ title: '작업지시 수정/삭제' });
 const breadcrumbs = shallowRef([
   { title: '생산', disabled: true, href: '#' },
@@ -188,7 +186,7 @@ const PAGE_SIZE = 10;
 async function fetchOrders() {
   const kw = (search.value.issueNumber || search.value.orderName || search.value.productCode || search.value.contact || '').trim();
   try {
-    const { data } = await axios.get(`${API}/workorders`, { params: { kw, page: 1, size: 500 } });
+    const { data } = await axios.get(`/workorders`, { params: { kw, page: 1, size: 500 } });
     if (data?.ok) {
       orders.value = (data.rows || []).map((r) => ({
         id: r.id,
@@ -326,7 +324,7 @@ async function saveEdit() {
       targetQty: Number(edit.form.targetQty || 0),
       memo: edit.form.memo || ''
     };
-    const { data } = await axios.put(`${API}/workorders/${edit.form.id}`, payload);
+    const { data } = await axios.put(`/workorders/${edit.form.id}`, payload);
     if (data?.ok) {
       const updated = { ...edit.original, ...edit.form };
       gridApi?.applyTransactionAsync({ update: [updated] });
@@ -353,7 +351,7 @@ async function bulkDelete() {
 
   try {
     const ids = selected.map((r) => r.id);
-    const { data } = await axios.delete(`${API}/workorders`, { data: { ids } });
+    const { data } = await axios.delete(`/workorders`, { data: { ids } });
     if (data?.ok) {
       gridApi.applyTransactionAsync({ remove: selected });
       const set = new Set(ids);

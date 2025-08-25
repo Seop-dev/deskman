@@ -167,8 +167,6 @@ import BaseBreadcrumb from '@/components/shared/BaseBreadcrumb.vue';
 import UiParentCard from '@/components/shared/UiParentCard.vue';
 import { AgGridVue } from 'ag-grid-vue3';
 
-const API = import.meta?.env?.VITE_API_URL;
-
 // 헤더
 const page = ref({ title: '생산계획 수정/삭제' });
 const breadcrumbs = shallowRef([
@@ -197,7 +195,7 @@ onMounted(() => {
 async function fetchPlans() {
   try {
     const kw = (search.value.planNo || search.value.planName || '').trim();
-    const { data } = await axios.get(`${API}/plans`, {
+    const { data } = await axios.get(`/plans`, {
       params: { kw, page: 1, size: 200 }
     });
     if (data?.ok) {
@@ -317,7 +315,7 @@ async function saveEdit() {
       productCode: edit.form.productCode,
       memo: edit.form.memo
     };
-    const { data } = await axios.put(`${API}/plans/${id}`, payload);
+    const { data } = await axios.put(`/plans/${id}`, payload);
     if (data?.ok) {
       // 그리드 갱신
       const updated = { ...edit.original, ...edit.form };
@@ -361,7 +359,7 @@ async function bulkDelete() {
 
   try {
     const ids = selected.map((r) => r.id);
-    const { data } = await axios.delete(`${API}/plans`, { data: { ids } });
+    const { data } = await axios.delete(`/plans`, { data: { ids } });
     if (data?.ok) {
       gridApi.applyTransactionAsync({ remove: selected });
       const set = new Set(ids);
