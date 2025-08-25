@@ -302,11 +302,14 @@ const submitForm = async () => {
     return;
   }
   console.log(selectedProduct.value);
+
   const condition = {
     PRD_CODE: selectedProduct.value.제품코드,
-    BOM_WRITER: selectedProduct.value.작성자, // 세션에서 받아야함
-    BOM_VER: selectedBomVer.value
+    BOM_WRITER: authStore.user?.name || '', // 세션에서 받아야함
+
+    BOM_VER: selectedBomVer.value ? selectedBomVer.value : 'v1.01'
   };
+  console.log(selectedBomVer.value);
   try {
     const res = await axios.post('http://localhost:3000/BOMinsert', condition);
     console.log(res);
