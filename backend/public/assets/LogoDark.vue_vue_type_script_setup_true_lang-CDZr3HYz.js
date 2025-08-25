@@ -1,0 +1,1 @@
+import{x as t,q as s,o,a,A as r,aa as n,w as i,d as l}from"./index-CGGVM91c.js";const _="/assets/logo-BIyHlLE9.svg",c={class:"logo"},u=t({__name:"LogoDark",setup(p){return(d,e)=>(o(),s("div",c,[a(r(n),{to:"/"},{default:i(()=>e[0]||(e[0]=[l("img",{src:_,alt:"",style:{width:"92px",height:"inherit"}},null,-1)])),_:1})]))}});export{u as _};
