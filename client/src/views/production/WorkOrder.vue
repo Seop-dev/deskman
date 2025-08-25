@@ -175,7 +175,6 @@ import BaseBreadcrumb from '@/components/shared/BaseBreadcrumb.vue';
 import UiParentCard from '@/components/shared/UiParentCard.vue';
 import { AgGridVue } from 'ag-grid-vue3';
 
-const API = import.meta?.env?.VITE_API_URL;
 /* 페이지 타이틀/브레드크럼 */
 const page = ref({ title: '작업지시 관리' });
 const breadcrumbs = shallowRef([
@@ -223,7 +222,7 @@ const productKeyword = ref('');
 const PROD_PAGE_SIZE = 10;
 async function fetchProducts() {
   try {
-    const { data } = await axios.get(`${API}/products`, { params: { kw: productKeyword.value, page: 1, size: 100 } });
+    const { data } = await axios.get(`/products`, { params: { kw: productKeyword.value, page: 1, size: 100 } });
     if (data?.ok || data?.rows) products.value = data.rows || [];
   } catch (e) {
     console.error(e);
@@ -250,7 +249,7 @@ async function fetchMatStatus(productCode, targetQty) {
   const qty = Math.max(Number(targetQty || 0), 0);
   if (!code) return;
   try {
-    const { data } = await axios.get(`${API}/materials/status`, { params: { productCode: code, targetQty: qty } });
+    const { data } = await axios.get(`/materials/status`, { params: { productCode: code, targetQty: qty } });
     const rows = data?.rows || [];
     matRows.value = rows.map((r) => ({ ...r, status: Number(r.shortage || 0) > 0 ? '부족' : '가능' }));
   } catch (e) {
@@ -268,7 +267,7 @@ async function fetchBom(productCode) {
   bomRows.value = [];
   if (!productCode) return;
   try {
-    const { data } = await axios.get(`${API}/boms`, { params: { productCode } });
+    const { data } = await axios.get(`/boms`, { params: { productCode } });
     if (data?.ok || data?.items) {
       bomHeader.value = data.header || null;
       bomRows.value = (data.items || []).map((r) => ({
@@ -294,7 +293,7 @@ const plans = ref([]);
 async function fetchPlans() {
   try {
     const kw = planKeyword.value.trim();
-    const { data } = await axios.get(`${API}/plans`, { params: { kw, page: 1, size: 200 } });
+    const { data } = await axios.get(`/plans`, { params: { kw, page: 1, size: 200 } });
     if (data?.ok || data?.rows) plans.value = data.rows || [];
     else toast('계획서 조회 실패', 'error');
   } catch (e) {
@@ -396,7 +395,7 @@ async function submitForm() {
       },
       selectedPlanIds: checkedPlanIds.value
     };
-    const { data } = await axios.post(`${API}/workorders`, payload);
+    const { data } = await axios.post(`/workorders`, payload);
 
     if (data?.ok) {
       toast(`작업지시 저장 완료 (ID: ${data.woId}, NO: ${data.woNo})`, 'success');

@@ -69,8 +69,6 @@ import BaseBreadcrumb from '@/components/shared/BaseBreadcrumb.vue';
 import UiParentCard from '@/components/shared/UiParentCard.vue';
 import { AgGridVue } from 'ag-grid-vue3';
 
-const API = import.meta?.env?.VITE_API_URL;
-
 /* 헤더 */
 const page = ref({ title: '생산계획 조회' });
 const breadcrumbs = shallowRef([
@@ -98,7 +96,7 @@ async function fetchPlans() {
   try {
     // 서버는 kw만 받음(계획번호/계획명 위주)
     const kwBase = (search.value.planNo || search.value.planName || '').trim();
-    const { data } = await axios.get(`${API}/plans`, {
+    const { data } = await axios.get(`/plans`, {
       params: { kw: kwBase, page: 1, size: 200 }
     });
 

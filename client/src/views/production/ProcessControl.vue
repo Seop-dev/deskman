@@ -257,7 +257,6 @@ import BaseBreadcrumb from '@/components/shared/BaseBreadcrumb.vue';
 import UiParentCard from '@/components/shared/UiParentCard.vue';
 import { useProcessSimStore, PROCESS_LIST, EQ } from '@/stores/useProcessSimStore';
 
-const API = import.meta?.env?.VITE_API_URL;
 const store = useProcessSimStore();
 
 /* 헤더 */
@@ -321,7 +320,7 @@ async function loadEquipmentsByProcess(procCode = '') {
     equipments.value = [];
     return;
   }
-  const res = await axios.get(`${API}/api/facilities`, { params: { process: prId } }).catch(() => ({ data: null }));
+  const res = await axios.get(`/facilities`, { params: { process: prId } }).catch(() => ({ data: null }));
   const list = res?.data?.rows || [];
   equipments.value = list.map((r) => ({
     id: String(r.id ?? r.facId ?? r.code),

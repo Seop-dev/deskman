@@ -41,7 +41,7 @@ import { useRouter } from 'vue-router';
 import BaseBreadcrumb from '@/components/shared/BaseBreadcrumb.vue';
 import UiParentCard from '@/components/shared/UiParentCard.vue';
 import { AgGridVue } from 'ag-grid-vue3';
-import http from '@/lib/http'; // ✅ 공용 HTTP 인스턴스
+import axios from 'axios'; // ✅ 공용 axios 인스턴스
 
 const router = useRouter();
 
@@ -61,7 +61,7 @@ async function fetchOrders() {
   const kw = (search.value.issueNumber || search.value.orderName || search.value.productCode || search.value.contact || '').trim();
   try {
     // ✅ 절대 경로로 /api 사용 (Nginx/Vite 프록시가 백엔드로 전달)
-    const { data } = await http.get('/api/workorders', { params: { kw, page: 1, size: 300 } });
+    const { data } = await axios.get('/workorders', { params: { kw, page: 1, size: 300 } });
     if (data?.ok) {
       orders.value = (data.rows || []).map((r) => ({
         id: r.id,
