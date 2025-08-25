@@ -320,7 +320,7 @@ async function loadEquipmentsByProcess(procCode = '') {
     equipments.value = [];
     return;
   }
-  const res = await axios.get(`/facilities`, { params: { process: prId } }).catch(() => ({ data: null }));
+  const res = await axios.get(`/api/facilities`, { params: { process: prId } }).catch(() => ({ data: null }));
   const list = res?.data?.rows || [];
   equipments.value = list.map((r) => ({
     id: String(r.id ?? r.facId ?? r.code),
