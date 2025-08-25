@@ -337,12 +337,29 @@ function applyOrders() {
 
 /* 저장 */
 async function savePlan() {
-  if (!form.value.issueNumber || !form.value.orderDate) return toast('계획번호/계획명을 입력하세요.', 'error');
-  if (!form.value.productCode) return toast('제품을 등록하세요.', 'error');
+  if (!form.value.issueNumber || !form.value.orderDate) {
+    return toast('계획번호/계획명을 입력하세요.', 'error');
+  }
+  if (!form.value.productCode) {
+    return toast('제품을 등록하세요.', 'error');
+  }
+  if (!form.value.contact) {
+    return toast('작성자를 입력하세요.', 'error');
+  }
+  if (!form.value.dueDate) {
+    return toast('작성일자를 입력하세요.', 'error');
+  }
+  if (!form.value.dueDate2) {
+    return toast('납기일자를 입력하세요.', 'error');
+  }
+  if (!form.value.targetQty || form.value.targetQty <= 0) {
+    return toast('총 수량을 입력하세요.', 'error');
+  }
+
   try {
     const { data } = await axios.post(`${API}/plans`, {
       form: form.value,
-      linkedOrderIds: selectedOrderIds.value // ✅ 함께 전송
+      linkedOrderIds: selectedOrderIds.value
     });
     if (data?.ok) {
       toast('저장되었습니다.');
