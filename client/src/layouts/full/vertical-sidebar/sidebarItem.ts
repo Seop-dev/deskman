@@ -354,19 +354,6 @@ const sidebarItem: menu[] = [
       {
         title: '물류 출하',
         to: '/warehouse/ShipmentSelect'
-      },
-      {
-        title: '폐기 처리',
-        children: [
-          {
-            title: '폐기 일정 등록',
-            to: '/warehouse/ScrapInsert'
-          },
-          {
-            title: '폐기 처리 조회',
-            to: '/warehouse/ScrapSelect'
-          }
-        ]
       }
     ]
   }

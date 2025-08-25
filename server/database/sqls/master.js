@@ -10,6 +10,7 @@ const masterEmpSelect = ` SELECT EMP_NO,
                                 EMP_EDATE,
                                 EMP_STATUS
                          FROM EMPLOYEES
+                         WHERE EMP_STATUS = '재직'
                          order by EMP_NO DESC `;
 
 // 공통코드 조회
@@ -138,6 +139,7 @@ const masterPrdSearch = `SELECT
 
 // 자재목록
 const masterMatSelect = `SELECT MAT_CODE, MAT_NAME, MAT_TYPE, MAT_UNIT, MAT_SIZE, MAT_SAFEQT, MAT_DATE, MAT_WRITER, MAT_NOTE FROM MATERIALS
+WHERE USE_YN = 'Y'
 ORDER BY MAT_CODE DESC;`;
 
 // 자재 모달
@@ -171,8 +173,18 @@ const masterMatUpdate = `UPDATE MATERIALS
 const masterMatUnit = `SELECT code_name FROM code_master 
 WHERE group_code = 'UN'`;
 
+const masterMatDelete = `UPDATE MATERIALS
+                         SET USE_YN = 'N'
+                         WHERE MAT_CODE = ?`;
+
+const masterMatSearch = `SELECT MAT_CODE, MAT_NAME, MAT_TYPE, MAT_UNIT, MAT_SIZE, MAT_SAFEQT, MAT_DATE, MAT_WRITER, MAT_NOTE FROM MATERIALS
+                         WHERE USE_YN = 'Y'
+                         AND MAT_NAME LIKE CONCAT('%', ?, '%')
+                         ORDER BY MAT_CODE DESC`;
+
 // 재공품 목록
 const masterWIPSelect = `SELECT WIP_CODE, WIP_NAME, WIP_TYPE, WIP_SIZE,WIP_UNIT, WIP_WRITER,WIP_DATE, WIP_NOTE FROM WIP
+WHERE USE_YN = 'Y'
 ORDER BY WIP_CODE DESC;`;
 
 // 재공품 모달
@@ -203,8 +215,20 @@ const masterWIPUpdate = `UPDATE WIP
 const masterWIPUnit = `SELECT code_name FROM code_master 
 WHERE group_code = 'UN'`;
 
+// 재공품관리 - 삭제
+const masterWIPDelete = `UPDATE WIP 
+                         SET USE_YN = 'N'
+                         WHERE WIP_CODE = ?`;
+
+// 재공품 관리 - 검색
+const masterWIPSearch = `SELECT WIP_CODE, WIP_NAME, WIP_TYPE, WIP_SIZE,WIP_UNIT, WIP_WRITER,WIP_DATE, WIP_NOTE FROM WIP
+WHERE USE_YN = 'Y'
+ AND WIP_NAME LIKE CONCAT('%', ?, '%')
+ORDER BY WIP_CODE DESC;`;
+
 // 공정 목록
 const masterPrcSelect = `SELECT PRC_CODE, PRC_NAME, PRC_RDATE, PRC_WRITER, PRC_NOTE, FAC_TYPE FROM PROCESS
+WHERE USE_YN = 'Y'
 ORDER BY PRC_CODE DESC;`;
 
 // 공정 모달(설비유형)
@@ -228,6 +252,16 @@ const masterPrcUpdate = `UPDATE PROCESS
                          PRC_RDATE =?,
                          PRC_NOTE =?
                          WHERE PRC_CODE = ?`;
+// 공정 삭제
+const masterPrcDelete = `UPDATE PROCESS
+                         SET USE_YN = 'N'
+                         WHERE PRC_CODE = ?`;
+
+// 공정 검색
+const masterPrcSearch = `SELECT PRC_CODE, PRC_NAME, PRC_RDATE, PRC_WRITER, PRC_NOTE, FAC_TYPE FROM PROCESS
+WHERE USE_YN = 'Y'
+AND PRC_NAME LIKE CONCAT('%', ?, '%')
+ORDER BY PRC_CODE DESC;`;
 
 // BOM 관리에서 제품조회
 const BOMprdSelect = `SELECT p.PRD_NAME,
@@ -326,6 +360,21 @@ const diaPrdList = `SELECT
 FROM PRODUCT p
 ORDER BY p.PRD_CODE DESC`;
 
+// 공정흐름도 검색
+const diaPrdSearch = `SELECT 
+    p.PRD_NAME,
+    p.PRD_CODE,
+    p.PRD_TYPE,
+    (SELECT d.DIA_CODE 
+       FROM DIAGRAM d 
+      WHERE d.PRD_CODE = p.PRD_CODE
+      LIMIT 1) AS DIA_CODE,   
+    p.PRD_WRITER,
+    p.PRD_DATE
+FROM PRODUCT p
+WHERE PRD_NAME LIKE CONCAT('%', ?, '%')
+ORDER BY p.PRD_CODE DESC`;
+
 // 공정흐름도 - 모달 조회
 const diaModalList = `SELECT PRC_CODE, 
                               PRC_NAME,
@@ -369,8 +418,16 @@ const wrSelect = `SELECT WR_AREANO,
                          WR_PRD_ID,
                          WR_TYPE
                  FROM WR_DETAIL
-                 WHERE WR_NO = ?`;
+                 WHERE WR_NO = ?
+                 ORDER BY WR_AREANO`;
 
+// 창고 정보 품목모달
+const InfoModal = `SELECT code,code_name 
+from code_master
+where group_code = 'PM'
+ORDER BY updated_at`;
+
+// 출하
 const wrShip = `SELECT SHIP_NO, 
                          WR_NAME,
                           D_DAY, 
@@ -398,6 +455,28 @@ const wrDelivery = `SELECT CUS_TYPE, CUS_NAME, CUS_MANAGER
 FROM CUSTOMERS
 WHERE CUS_TYPE = '운송업체'`;
 
+const wrInfoInsert = `INSERT INTO WR_DETAIL(WR_AREANO,WR_SECTION,WR_PRD_ID,WR_TYPE,WR_NO)
+VALUES(?,getNextWrCode(?,?),?,?,?);
+`;
+const wrInfoUpdate = `UPDATE WR_DETAIL
+SET WR_AREANO = ?,
+	WR_SECTION = ?,
+    WR_PRD_ID =?,
+    WR_TYPE =?
+    WR_NO = ?
+WHERE WR_SECTION = ?`;
+
+// 삭제 버튼
+const wrDelete = `DELETE FROM WR_DETAIL
+                  WHERE WR_SECTION = ?`;
+
+// 모달에서 삭제
+const wrModalDelete = `DELETE FROM WAREHOUSE
+WHERE WR_NO = ?`;
+
+// 모달 추가
+const wrModalInsert = `INSERT INTO WAREHOUSE
+VALUES (GetNextWR_NO(),?,?)`;
 module.exports = {
   masterEmpSelect,
   masterEmpInsert,
@@ -453,4 +532,17 @@ module.exports = {
   wrShip,
   wrShipUpdate,
   wrDelivery,
+  masterMatDelete,
+  masterWIPDelete,
+  masterMatSearch,
+  diaPrdSearch,
+  masterPrcDelete,
+  masterWIPSearch,
+  masterPrcSearch,
+  InfoModal,
+  wrInfoInsert,
+  wrInfoUpdate,
+  wrDelete,
+  wrModalDelete,
+  wrModalInsert,
 };

@@ -16,8 +16,9 @@
           :theme="quartz"
           style="height: 500px; width: 100%"
           @cell-value-changed="onCellValueChanged"
-          :rowSelection="rowSelection"
+          rowSelection="single"
           @rowClicked="onRowClicked"
+          @grid-ready="onGridReadyMat"
         ></ag-grid-vue>
       </div>
       <div class="form-wrapper">
@@ -83,7 +84,7 @@ import { useAuthStore } from '@/stores/auth';
 const authStore = useAuthStore();
 
 const quartz = themeQuartz;
-const rowSelection = ref({ mode: 'multiRow' });
+
 const today = new Date().toISOString().split('T')[0];
 
 const form = ref({
@@ -99,6 +100,10 @@ const form = ref({
 
 const rowData1 = ref([]);
 const colDefs1 = ref([
+  {
+    checkboxSelection: true, // 각 행에 체크박스
+    width: 50
+  },
   { field: '재공품코드', editable: true, width: 130 },
   { field: '재공품명', width: 130, editable: true },
   { field: '재공품유형', width: 130, editable: true },
@@ -137,14 +142,32 @@ const materialColDefs = [
   { field: '사용유무', headerName: '사용유무', flex: 1 }
 ];
 const materialRowData = ref([]);
+// 모달 조회
+const modalList = async () => {
+  const res = await axios.get('http://localhost:3000/masterWIPModal');
+  materialRowData.value = res.data.map((prd) => ({
+    그룹코드: prd.group_code,
+    규격: prd.code_name,
+    사용유무: prd.use_yn
+  }));
+};
+// 모달에서 확인시
+const modalConfirm = async (selectedRow) => {
+  form.value.size = selectedRow.규격;
+  $toast.info(`규격 [${selectedRow.규격}] 선택됨`, { position: 'top-right' });
+};
 
 // 그리드 API
 const gridApiMat = ref(null);
+const onGridReadyMat = (params) => {
+  gridApiMat.value = params.api;
+};
 
 onMounted(() => {
   wipList();
   unitList();
   typeList();
+  modalList();
 });
 
 const wipList = async () => {
@@ -208,21 +231,25 @@ const del = async () => {
   if (!confirm(`${selectedRows.map((r) => r.재공품명).join(', ')}을 삭제하시겠습니까?`)) return;
 
   const wipCode = selectedRows.map((r) => r.재공품코드);
-  await axios.post('http://localhost:3000/masterWIPDelete', { wipCode });
+  console.log(wipCode);
+  await axios.post('http://localhost:3000/masterWIPDelete', { WIP_CODE: wipCode });
   await wipList();
-  $toast.success('재공품이 삭제되었습니다.', { position: 'top-right', duration: 1000 });
+  $toast.success(`${selectedRows.map((r) => r.재공품명)}(이)가 삭제되었습니다.`, { position: 'top-right', duration: 1000 });
 };
 
 // 초기화
 const resetForm = () => {
-  form.value.wipCode = '';
-  form.value.wipName = '';
-  form.value.size = '';
-  form.value.unit = '';
-  form.value.type = '';
-  form.value.note = '';
+  form.value = {
+    wipCode: '',
+    wipName: '',
+    writer: authStore.user?.name || '',
+    date: today,
+    size: '',
+    type: '',
+    note: ''
+  };
+  wipList();
   // writer와 date는 유지
-  $toast.info('초기화되었습니다.', { position: 'top-right', duration: 1000 });
 };
 
 // 행선택시 등록 폼
@@ -245,13 +272,13 @@ const openModal = async (title, rowData, colDefs) => {
   modalRef.value?.open();
 };
 
-const modalConfirm = async (selectedRow) => {
-  form.value.size = selectedRow.규격;
-};
-
 // 검색
 const searchKeyword = ref('');
 const searchData = async () => {
+  if (!searchKeyword.value) {
+    $toast.warning('재공품이 입력되지 않았습니다', { position: 'top-right', duration: 1000 });
+    return;
+  }
   const condition = { WIP_NAME: searchKeyword.value };
   const res = await axios.post('http://localhost:3000/masterWIPSearch', condition);
   rowData1.value = res.data.map((prd) => ({
@@ -261,9 +288,10 @@ const searchData = async () => {
     규격: prd.WIP_SIZE,
     단위: prd.WIP_UNIT,
     작성자: prd.WIP_WRITER,
-    등록일자: prd.WIP_DATE.substring(0, 10),
+    등록일자: prd.WIP_DATE ? prd.WIP_DATE.substring(0, 10) : null,
     비고: prd.WIP_NOTE
   }));
+  $toast.success('검색이 완료되었습니다.', { position: 'top-right', duration: 1000 });
 };
 </script>
 

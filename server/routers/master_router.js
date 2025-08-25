@@ -25,7 +25,7 @@ router.get("/commonAuth", async (req, res) => {
 // 사원 검색
 router.post("/masterEmpName", async (req, res) => {
   try {
-    const data = req.query.EMP_NAME;
+    const data = req.body;
     let list = await masterService.masterEmpSelectName(data);
     res.send(list);
   } catch (e) {
@@ -186,6 +186,29 @@ router.post("/masterMatUpdate", async (req, res) => {
   }
 });
 
+// 자재 - 삭제
+router.post("/masterMatDelete", async (req, res) => {
+  try {
+    const data = req.body;
+    console.log(req.body);
+    let result = await masterService.masterMatDelete(data);
+    res.json(result);
+  } catch (e) {
+    console.log(e);
+  }
+});
+
+// 자재 검색
+router.post("/masterMatSearch", async (req, res) => {
+  try {
+    const data = req.body;
+    let result = await masterService.masterMatSearch(data);
+    res.json(result);
+  } catch (e) {
+    console.log(e);
+  }
+});
+
 // 재공품 조회
 router.get("/masterWIPSelect", async (req, res) => {
   let list = await masterService.masterWIPSelect();
@@ -234,6 +257,29 @@ router.post("/masterWIPUpdate", async (req, res) => {
   }
 });
 
+// 재공품 - 삭제
+router.post("/masterWIPDelete", async (req, res) => {
+  try {
+    const data = req.body;
+    console.log(req.body);
+    let result = await masterService.masterWIPDelete(data);
+    res.json(result);
+  } catch (e) {
+    console.log(e);
+  }
+});
+
+// 재공품 검색
+router.post("/masterWIPSearch", async (req, res) => {
+  try {
+    const data = req.body;
+    let result = await masterService.masterWIPSearch(data);
+    res.json(result);
+  } catch (e) {
+    console.log(e);
+  }
+});
+
 // 공정 전체 조회
 router.get("/masterPrcSelect", async (req, res) => {
   let list = await masterService.masterPrcSelect();
@@ -264,6 +310,29 @@ router.post("/masterPrcUpdate", async (req, res) => {
     const data = req.body;
     console.log(req.body);
     let result = await masterService.masterPrcUpdate(data);
+    res.json(result);
+  } catch (e) {
+    console.log(e);
+  }
+});
+
+// 공정 삭제
+router.post("/masterPrcDelete", async (req, res) => {
+  try {
+    const data = req.body;
+    console.log(req.body);
+    let result = await masterService.masterPrcDelete(data);
+    res.json(result);
+  } catch (e) {
+    console.log(e);
+  }
+});
+// 공정 검색
+router.post("/masterPrcSearch", async (req, res) => {
+  try {
+    const data = req.body;
+    console.log(req.body);
+    let result = await masterService.masterPrcSearch(data);
     res.json(result);
   } catch (e) {
     console.log(e);
@@ -369,6 +438,17 @@ router.get("/diaPrdList", async (req, res) => {
   res.send(list);
 });
 
+// 공정흐름도 검색
+router.post("/diaPrdSearch", async (req, res) => {
+  try {
+    const data = req.body;
+    let result = await masterService.diaPrdSearch(data);
+    res.json(result);
+  } catch (e) {
+    console.log(e);
+  }
+});
+
 // 공정흐름도- 모달조회
 router.get("/diaModalList", async (req, res) => {
   let list = await masterService.diaModalList();
@@ -448,6 +528,13 @@ router.post("/wrSelect", async (req, res) => {
   }
 });
 
+// 창고 - 품목 모달
+
+router.get("/InfoModal", async (req, res) => {
+  let list = await masterService.InfoModal();
+  res.send(list);
+});
+
 //출하 - 조회
 router.get("/wrShip", async (req, res) => {
   let list = await masterService.wrShip();
@@ -472,4 +559,61 @@ router.get("/wrDelivery", async (req, res) => {
   res.send(list);
 });
 
+// 창고 정보 등록
+router.post("/wrInfoInsert", async (req, res) => {
+  try {
+    const data = req.body;
+    console.log(req.body);
+    let result = await masterService.wrInfoInsert(data);
+    res.json(result);
+  } catch (e) {
+    console.log(e);
+  }
+});
+// 창고 정보 수정
+router.post("/wrInfoUpdate", async (req, res) => {
+  try {
+    const data = req.body;
+    console.log(req.body);
+    let result = await masterService.wrInfoUpdate(data);
+    res.json(result);
+  } catch (e) {
+    console.log(e);
+  }
+});
+// 창고 정보 삭제
+router.post("/wrDelete", async (req, res) => {
+  try {
+    const data = req.body;
+    console.log(req.body);
+    let result = await masterService.wrDelete(data);
+    res.json(result);
+  } catch (e) {
+    console.log(e);
+  }
+});
+//
+// 창고 모달 삭제
+router.post("/wrModalDelete", async (req, res) => {
+  try {
+    const data = req.body;
+    console.log(req.body);
+    let result = await masterService.wrModalDelete(data);
+    res.json(result);
+  } catch (e) {
+    console.log(e);
+  }
+});
+
+// 창고 모달 삭제
+router.post("/wrModalInsert", async (req, res) => {
+  try {
+    const data = req.body;
+    console.log(req.body);
+    let result = await masterService.wrModalInsert(data);
+    res.json(result);
+  } catch (e) {
+    console.log(e);
+  }
+});
 module.exports = router;

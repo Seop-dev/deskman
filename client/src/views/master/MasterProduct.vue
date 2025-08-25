@@ -16,7 +16,7 @@
           :theme="quartz"
           style="height: 500px; width: 100%"
           @cell-value-changed="onCellValueChanged"
-          :rowSelection="rowSelection"
+          rowSelection="single"
           @rowClicked="onRowClicked"
           @grid-ready="onGridReadyMat"
         ></ag-grid-vue>
@@ -49,7 +49,7 @@
               <MoDal ref="modalRef" :title="modalTitle" :rowData="modalRowData" :colDefs="modalColDefs" @confirm="modalConfirm" />
             </v-col>
             <v-col cols="6">
-              <v-text-field label="안전재고" v-model="form.safeQT" dense outlined />
+              <v-text-field label="안전재고" v-model="form.safeQT" type="number" min="0" outlined />
             </v-col>
             <v-col cols="6">
               <v-select label="단위" v-model="form.unit" :items="unitOptions" dense outlined />
@@ -86,7 +86,7 @@ const $toast = useToast();
 const authStore = useAuthStore();
 
 const quartz = themeQuartz;
-const rowSelection = ref({ mode: 'multiRow' });
+
 const today = new Date().toISOString().split('T')[0];
 const form = ref({
   prdCode: '',
@@ -102,15 +102,23 @@ const form = ref({
 
 const rowData1 = ref([]);
 const colDefs1 = ref([
+  {
+    checkboxSelection: true, // 각 행에 체크박스
+    width: 50
+  },
   { field: '제품코드', editable: true, width: 140 },
   { field: '제품명', width: 140, editable: true },
   { field: '제품유형', width: 140, editable: true },
   { field: '규격', width: 140, editable: true },
   { field: '단위', width: 130, editable: true },
-  { field: '안전재고', width: 110 },
+  {
+    field: '안전재고',
+    flex: 1,
+    editable: true
+  },
   { field: '작성자', width: 110 },
   { field: '등록일자', width: 110 },
-  { field: '비고', width: 110 }
+  { field: '비고', width: 110, editable: true }
 ]);
 
 const page = ref({ title: '제품 관리' });
@@ -229,6 +237,10 @@ const del = async () => {
 
 const searchKeyword = ref('');
 const searchData = async () => {
+  if (!searchKeyword.value) {
+    $toast.warning('제품이 입력되지 않았습니다', { position: 'top-right', duration: 1000 });
+    return;
+  }
   const condition = { PRD_NAME: searchKeyword.value };
   const res = await axios.post('http://localhost:3000/masterPrdSearch', condition);
   rowData1.value = res.data.map((prd) => ({
@@ -242,18 +254,22 @@ const searchData = async () => {
     등록일자: prd.PRD_DATE.substring(0, 10),
     비고: prd.PRD_NOTE
   }));
+  $toast.success('검색이 완료되었습니다.', { position: 'top-right', duration: 1000 });
 };
 
 const resetForm = () => {
-  form.value.prdCode = '';
-  form.value.prdName = '';
-  form.value.size = '';
-  form.value.safeQT = '';
-  form.value.unit = '';
-  form.value.type = '';
-  form.value.note = '';
+  form.value = {
+    prdCode: '',
+    prdName: '',
+    writer: authStore.user?.name || '',
+    date: today,
+    size: '',
+    safeQT: '',
+    unit: '',
+    type: '',
+    note: ''
+  };
   // writer와 date는 유지
-  $toast.info('초기화되었습니다.', { position: 'top-right', duration: 1000 });
 };
 
 const onRowClicked = (event) => {

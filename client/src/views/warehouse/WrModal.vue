@@ -1,11 +1,11 @@
 <template>
-  <v-dialog v-model="dialog" max-width="800">
+  <v-dialog v-model="dialog" max-width="800" scrollable="true">
     <v-card>
       <v-card-title class="headline">{{ title }}</v-card-title>
       <v-card-actions class="justify-end">
         <v-btn color="darkText" variant="flat" class="mr-1" @click="addRow">추가</v-btn>
         <v-btn color="primary" variant="flat" class="mr-1" @click="update">저장</v-btn>
-        <v-btn color="error" variant="flat" class="mr-4" @click="resetForm">삭제</v-btn>
+        <v-btn color="error" variant="flat" class="mr-4" @click="del">삭제</v-btn>
       </v-card-actions>
       <v-card-text>
         <ag-grid-vue
@@ -17,6 +17,7 @@
           style="height: 400px; width: 100%"
           :pagination="true"
           :pagination-page-size="10"
+          @grid-ready="onGridReady"
         ></ag-grid-vue>
       </v-card-text>
 
@@ -33,6 +34,11 @@
 import { ref, watch, defineExpose, defineProps } from 'vue';
 import { AgGridVue } from 'ag-grid-vue3';
 import { themeQuartz } from 'ag-grid-community';
+import axios from 'axios';
+
+import { useToast } from 'vue-toast-notification';
+import 'vue-toast-notification/dist/theme-bootstrap.css';
+const $toast = useToast();
 
 const quartz = themeQuartz;
 const dialog = ref(false);
@@ -43,6 +49,36 @@ const props = defineProps({
   colDefs: Array
 });
 
+// 그리드 api에 값 저장
+let gridApi = null;
+
+const onGridReady = (params) => {
+  gridApi = params.api;
+};
+
+// 창고 삭제
+const del = async () => {
+  const selectedRows = gridApi.getSelectedRows();
+  console.log(selectedRows);
+  if (selectedRows.length === 0) {
+    alert('삭제할 창고를 선택하세요', { position: 'top-right', duration: 1000 });
+    return;
+  }
+  const deleteRow = { WR_NO: selectedRows[0].창고번호 };
+
+  if (window.confirm(`${selectedRows[0].창고명} 를 삭제하시겠습니까?`)) {
+    try {
+      internalRowData.value = internalRowData.value.filter((row) => row.창고번호 !== selectedRows[0].창고번호);
+      await axios.post('http://localhost:3000/wrModalDelete', deleteRow);
+      $toast.success('삭제 완료', { position: 'top-right', duration: 1000 });
+      emit('deleted');
+    } catch {
+      $toast.error(`창고에 데이터가 있어서 삭제하지 못했습니다.`);
+    }
+  } else {
+    console.log('삭제취소');
+  }
+};
 // props의 데이터를 받을 내부 ref 변수 선언
 const internalRowData = ref([]);
 const internalColDefs = ref([]);
@@ -78,12 +114,27 @@ const addRow = () => {
   internalRowData.value.push(newRow);
 };
 
+const update = async () => {
+  // db저장
+  const selectedRows = gridApi.getSelectedRows();
+  if (selectedRows.length === 0) {
+    $toast.error('추가할 행을 선택하세요');
+    return;
+  }
+  const newRow = {
+    WR_ADDR: selectedRows[0].창고주소,
+    WR_NAME: selectedRows[0].창고명
+  };
+  const result = await axios.post('http://localhost:3000/wrModalInsert', newRow);
+  console.log(result.config.data);
+};
+
 function onRowClicked(event) {
   selectedRow.value = event.data;
   console.log(selectedRow.value);
 }
 
-const emit = defineEmits(['confirm']);
+const emit = defineEmits(['confirm', 'deleted', 'update']);
 
 // '확인' 버튼 클릭 시 로직
 const confirm = () => {
