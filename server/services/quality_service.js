@@ -37,6 +37,12 @@ const addRejectMat = async (data) => {
   return mariadb.query("rejectMat", params);
 };
 
+// 원자재등록 완료시 RECEIPT_NO 처리
+const updateTmpStatus = async (data) => {
+  const params = [data.RECEIPT_NO];
+  return await mariadb.query("chTmpStatus", params);
+};
+
 // 제품공정조회
 const selectTaskPrd = async () => {
   let list = await mariadb.query("taskPrd");
@@ -220,6 +226,7 @@ module.exports = {
   matMng,
   addPassMat,
   addRejectMat,
+  updateTmpStatus,
   selectTaskPrd,
   selectPrdCert,
   selectPrdQstd,

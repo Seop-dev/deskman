@@ -69,6 +69,19 @@ router.post("/rejectmat", async (req, res) => {
   }
 });
 
+// 원자재등록 완료시 RECEIPT_NO 처리
+router.post("/chmatstatus", async (req, res) => {
+  try {
+    const { RECEIPT_NO } = req.body || {};
+    const result = await qualityService.updateTmpStatus({ RECEIPT_NO });
+    console.log("원자재 tmp_status 상태는 => ", result);
+    return res.json({ ok: true, changed: result.affectedRows || 0 });
+  } catch (e) {
+    console.error("chmatstatus error:", e);
+    return res.status(500).json({ ok: false, message: e.message });
+  }
+});
+
 // 불합격제품 등록
 router.post("/rejectprd", async (req, res) => {
   try {
