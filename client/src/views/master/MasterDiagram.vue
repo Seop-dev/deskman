@@ -243,7 +243,7 @@ const modalList = async () => {
     공정코드: prd.PRC_CODE,
     공정명: prd.PRC_NAME,
     설비유형: prd.FAC_TYPE,
-    등록일자: prd.PRC_RDATE.substring(0, 10)
+    등록일자: prd.PRC_RDATE ? prd.PRC_RDATE.substring(0, 10) : null
   }));
 };
 

@@ -184,7 +184,7 @@ const submitForm = async () => {
         PRC_NAME: form.value.prcName,
         FAC_TYPE: form.value.type,
         PRC_WRITER: form.value.writer,
-        PRC_DATE: form.value.date,
+        PRC_RDATE: form.value.date,
         PRC_NOTE: form.value.note
       };
       await axios.post('http://localhost:3000/masterPrcInsert', newRow);

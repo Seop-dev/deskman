@@ -222,13 +222,20 @@ const itemModal = async (title, rowData, colData) => {
 };
 
 const itemModalConfirm = (row) => {
+  const exists = orderRow.value.some((r) => r.제품코드 === row.제품코드);
+  if (exists) {
+    $toast.info('이미 추가된 제품입니다.', { position: 'top-right', duration: 1000 });
+    return;
+  }
+
+  // 중복 없으면 추가
   orderRow.value.unshift(row);
   $toast.success('제품이 추가되었습니다.', { position: 'top-right', duration: 1000 });
 };
 
 /* 초기화 */
 const reset = () => {
-  order.value = { client: '', dDay: '', rDay: '' };
+  order.value = { client: '', dDay: '', rDay: '', writer: authStore.user?.name || '' };
   orderRow.value = [];
   selectedAccount.value = null;
   selectedItem.value = null;
