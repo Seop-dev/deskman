@@ -16,7 +16,7 @@
           :theme="quartz"
           style="height: 500px; width: 100%"
           @cell-value-changed="onCellValueChanged"
-          :rowSelection="rowSelection"
+          rowSelection="single"
           @rowClicked="onRowClicked"
           @grid-ready="onGridReadyMat"
         >
@@ -50,7 +50,7 @@
               <MoDal ref="modalRef" :title="modalTitle" :rowData="modalRowData" :colDefs="modalColDefs" @confirm="modalConfirm" />
             </v-col>
             <v-col cols="6">
-              <v-text-field label="안전재고" v-model="form.safeQT" dense outlined />
+              <v-text-field label="안전재고" v-model="form.safeQT" type="number" min="0" dense outlined />
             </v-col>
             <v-col cols="6">
               <v-select label="단위" v-model="form.unit" :items="unitOptions" dense outlined />
@@ -93,9 +93,7 @@ import { useAuthStore } from '@/stores/auth';
 const authStore = useAuthStore();
 
 const quartz = themeQuartz;
-const rowSelection = ref({
-  mode: 'multiRow'
-});
+
 const today = new Date().toISOString().split('T')[0];
 const form = ref({
   matCode: '',
@@ -120,6 +118,10 @@ onMounted(() => {
 const rowData1 = ref([]);
 
 const colDefs1 = ref([
+  {
+    checkboxSelection: true, // 각 행에 체크박스
+    width: 50
+  },
   { field: '자재코드', width: 140 },
   { field: '자재명', width: 140 },
   { field: '자재유형', width: 140 },
@@ -188,16 +190,16 @@ const submitForm = async () => {
         MAT_CODE: form.value.matCode
       };
       await axios.post('http://localhost:3000/masterMatUpdate', updateRow);
-      $toast.success('자재가 수정되었습니다.', { position: 'top-right' });
+      $toast.success('자재가 수정되었습니다.', { position: 'top-right', duration: 1000 });
     } else {
       // 신규 등록
       const exists = rowData1.value.some((item) => item.자재명 === form.value.matName);
       if (!form.value.matCode && exists) {
-        $toast.warning('이미 등록된 자재입니다.', { position: 'top-right' });
+        $toast.warning('이미 등록된 자재입니다.', { position: 'top-right', duration: 1000 });
         return; // 등록 막기
       }
       if (!form.value.safeQT || !form.value.type) {
-        $toast.warning('값을 올바르게 기재하십시오.', { position: 'top-right' });
+        $toast.warning('값을 올바르게 기재하십시오.', { position: 'top-right', duration: 1000 });
         return;
       }
 
@@ -212,12 +214,12 @@ const submitForm = async () => {
         MAT_NOTE: form.value.note
       };
       await axios.post('http://localhost:3000/masterMatInsert', newRow);
-      $toast.success('자재가 등록되었습니다.', { position: 'top-right' });
+      $toast.success('자재가 등록되었습니다.', { position: 'top-right', duration: 1000 });
     }
     matList();
     resetForm();
   } catch (err) {
-    $toast.error('저장 중 오류가 발생했습니다.', { position: 'top-right' });
+    $toast.error('저장 중 오류가 발생했습니다.', { position: 'top-right', duration: 1000 });
     console.error(err);
   }
 };
@@ -235,7 +237,7 @@ const resetForm = () => {
     type: '',
     note: ''
   };
-  $toast.info('초기화되었습니다.', { position: 'top-right' });
+  matList();
 };
 
 // 행 선택시 등록 폼으로
@@ -284,23 +286,45 @@ const openModal = async (title, rowData, colDefs) => {
 // 모달에서 확인시
 const modalConfirm = async (selectedRow) => {
   form.value.size = selectedRow.규격;
-  $toast.info(`규격 [${selectedRow.규격}] 선택됨`, { position: 'top-right' });
+  $toast.info(`규격 [${selectedRow.규격}] 선택됨`, { position: 'top-right', duration: 1000 });
 };
 
 // 삭제 (예시)
 const del = async () => {
   if (!form.value.matCode) {
-    $toast.warning('삭제할 자재를 선택하세요.', { position: 'top-right' });
+    $toast.warning('삭제할 자재를 선택하세요.', { position: 'top-right', duration: 1000 });
     return;
   }
   try {
     await axios.post('http://localhost:3000/masterMatDelete', { MAT_CODE: form.value.matCode });
-    $toast.success('자재가 삭제되었습니다.', { position: 'top-right' });
+    $toast.success(`${form.value.matName}(이)가 삭제되었습니다.`, { position: 'top-right', duration: 1000 });
     matList();
     resetForm();
   } catch {
-    $toast.error('삭제 중 오류가 발생했습니다.', { position: 'top-right' });
+    $toast.error('삭제 중 오류가 발생했습니다.', { position: 'top-right', duration: 1000 });
   }
+};
+
+const searchKeyword = ref('');
+const searchData = async () => {
+  if (!searchKeyword.value) {
+    $toast.warning('자재가 입력되지 않았습니다', { position: 'top-right', duration: 1000 });
+    return;
+  }
+  const condition = { MAT_NAME: searchKeyword.value };
+  const res = await axios.post('http://localhost:3000/masterMatSearch', condition);
+  rowData1.value = res.data.map((prd) => ({
+    자재코드: prd.MAT_CODE,
+    자재명: prd.MAT_NAME,
+    자재유형: prd.MAT_TYPE,
+    규격: prd.MAT_SIZE,
+    단위: prd.MAT_UNIT,
+    안전재고: prd.MAT_SAFEQT,
+    작성자: prd.MAT_WRITER,
+    등록일자: prd.MAT_DATE.substring(0, 10),
+    비고: prd.MAT_NOTE
+  }));
+  $toast.success('검색이 완료되었습니다.', { position: 'top-right', duration: 1000 });
 };
 </script>
 

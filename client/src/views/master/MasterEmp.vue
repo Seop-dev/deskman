@@ -100,7 +100,7 @@ const authStore = useAuthStore();
 
 //{ position: 'top-right', duration: 1000 }
 
-const searchKeyword = ref([]);
+const searchKeyword = ref('');
 const page = ref({ title: '사원 관리' });
 const breadcrumbs = shallowRef([
   {
@@ -186,13 +186,12 @@ const fetchCommonCodes = async () => {
   }
 };
 //사원 검색
-const searchData = async (searchKeyword) => {
-  console.log(searchKeyword);
+const searchData = async () => {
   if (!searchKeyword.value) {
-    $toast.warning('사원이 입력되지 않았습니다');
+    $toast.warning('사원이 입력되지 않았습니다', { position: 'top-right', duration: 1000 });
     return;
   }
-  const params = { EMP_NAME: `%${searchKeyword}%` };
+  const params = { EMP_NAME: searchKeyword.value };
   const res = await axios.post('http://localhost:3000/masterEmpName', params);
   empData.value = res.data.map((emp) => ({
     사원번호: emp.EMP_NO,
@@ -206,6 +205,7 @@ const searchData = async (searchKeyword) => {
     퇴사일자: emp.EMP_EDATE ? emp.EMP_EDATE.substring(0, 10) : null,
     재직상태: emp.EMP_STATUS
   }));
+  $toast.success('검색이 완료되었습니다.', { position: 'top-right', duration: 1000 });
 };
 
 // 저장버튼
@@ -271,13 +271,14 @@ const del = async () => {
   const deleteRow = { empNo: selectedRows[0].사원번호 };
   console.log(deleteRow);
   const result = await axios.delete('http://localhost:3000/masterEmpDelete', { data: deleteRow });
+  $toast.success(`${form.value.empName}(이)가 삭제되었습니다.`);
   console.log(result);
   empList();
 };
 // 폼 데이터를 초기화하는 함수
 const resetForm = () => {
   form.value = {
-    empName: '',
+    empName: authStore.user?.name || '',
     hireDate: '',
     empNo: '',
     email: '',
@@ -287,6 +288,7 @@ const resetForm = () => {
     addr: '',
     status: '재직'
   };
+  empList();
 };
 
 // 행선택시 등록 폼으로

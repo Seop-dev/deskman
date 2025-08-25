@@ -78,6 +78,15 @@ import { themeQuartz } from 'ag-grid-community';
 import MoDal from '../common/NewModal.vue';
 import axios from 'axios';
 
+// 토스트
+import { useToast } from 'vue-toast-notification';
+import 'vue-toast-notification/dist/theme-bootstrap.css';
+const $toast = useToast();
+
+// 로그인 세션 정보
+import { useAuthStore } from '@/stores/auth';
+const authStore = useAuthStore();
+
 const quartz = themeQuartz;
 const wrOptions = ref([]);
 onMounted(() => {
@@ -112,7 +121,7 @@ const colDefs = ref([
 ]);
 
 // ----------------- 폼 입력 필드 (유지) -----------------
-const form = reactive({ order: '', customer: '', dueDate: '', shipDate: '', writer: '', wrName: '', cusId: '' });
+const form = reactive({ order: '', customer: '', dueDate: '', shipDate: '', writer: authStore.user?.name || '', wrName: '', cusId: '' });
 
 // ----------------- 모달 (기본 정의) -----------------
 const modalRef = ref(null);
@@ -173,7 +182,7 @@ const materialColDefs1 = [
 
 const openModal1 = async (title) => {
   if (!form.order) {
-    alert('주문서를 선택해주세요');
+    $toast.warning('주문서를 선택해주세요', { position: 'top-right', duration: 1000 });
     return;
   }
   console.log('hi');
@@ -227,7 +236,7 @@ function resetForm() {
   form.orderDate = '';
   form.dueDate = '';
   form.manager = '';
-
+  form.writer = authStore.user?.name || '';
   rowData.value = [];
 }
 const gridApiMat = ref(null); // mat 그리드 API 저장용
@@ -237,12 +246,12 @@ const onGridReadyMat = (params) => {
 };
 async function submitForm() {
   if (!form.order) {
-    alert('주문서가 조회되지 않았습니다.');
+    $toast.warning('주문서가 조회되지 않았습니다.', { position: 'top-right', duration: 1000 });
     return;
   }
   const selectedRows = gridApiMat.value.getSelectedRows();
   if (selectedRows.length === 0) {
-    alert('입고할 제품을 선택하세요');
+    $toast.warning('입고할 제품을 선택하세요', { position: 'top-right', duration: 1000 });
     return;
   }
   console.log(selectedRows);
@@ -261,7 +270,7 @@ async function submitForm() {
   // 랏번호는 노드에서 진행
   const res = await axios.post('http://localhost:3000/shipInsert', payload);
   console.log(res);
-  alert('등록완료');
+  $toast.success('등록완료', { position: 'top-right', duration: 1000 });
 }
 
 const page = ref({ title: '출하지시서 등록' });

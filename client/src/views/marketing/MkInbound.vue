@@ -47,6 +47,10 @@ import { themeQuartz } from 'ag-grid-community';
 import { AgGridVue } from 'ag-grid-vue3';
 import UiParentCard from '@/components/shared/UiParentCard.vue';
 import axios from 'axios';
+// 토스트
+import { useToast } from 'vue-toast-notification';
+import 'vue-toast-notification/dist/theme-bootstrap.css';
+const $toast = useToast();
 
 // 모달 임포트
 
@@ -111,7 +115,7 @@ const qualityList = async () => {
 const submitForm = async () => {
   const selectedRows = gridApiMat.value.getSelectedRows();
   if (selectedRows.length === 0) {
-    alert('입고할 제품을 선택하세요');
+    $toast.warning('입고할 제품을 선택하세요');
     return;
   }
   console.log(selectedRows);
@@ -125,7 +129,7 @@ const submitForm = async () => {
   // 랏번호는 노드에서 진행
   const res = await axios.post('http://localhost:3000/inboundInsert', payload);
   console.log(res);
-  alert('등록완료');
+  $toast.success('등록완료', { position: 'top-right', duration: 1000 });
 };
 // 날짜 검색
 const searchData = async () => {
@@ -134,7 +138,7 @@ const searchData = async () => {
     endDate: form.value.endDate
   };
   if (!form.value.startDate) {
-    alert('날짜를 올바르게 선택하세요.');
+    $toast.warning('날짜를 올바르게 선택하세요.', { position: 'top-right', duration: 1000 });
     return;
   }
   const res = await axios.post('http://localhost:3000/inboundSearch', condition);

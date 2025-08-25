@@ -16,8 +16,8 @@
           :theme="quartz"
           style="height: 500px; width: 100%"
           @cell-value-changed="onCellValueChanged"
-          :rowSelection="rowSelection"
           @rowClicked="onRowClicked"
+          rowSelection="single"
         >
           <!--  :defaultColDef="{ width: 150 }" 로 전체 width지정도가능-->
         </ag-grid-vue>
@@ -88,9 +88,7 @@ const authStore = useAuthStore();
 //{ position: 'top-right', duration: 1000 }
 
 const quartz = themeQuartz;
-const rowSelection = ref({
-  mode: 'multiRow'
-});
+
 const today = new Date().toISOString().split('T')[0];
 const form = ref({
   prcCode: '', //
@@ -105,6 +103,10 @@ const form = ref({
 const rowData1 = ref([]);
 
 const colDefs1 = ref([
+  {
+    checkboxSelection: true, // 각 행에 체크박스
+    width: 50
+  },
   { field: '공정코드', editable: true, width: 140 },
   { field: '공정명', width: 140, editable: true },
   { field: '설비유형', width: 140, editable: true },
@@ -136,7 +138,7 @@ const prcList = async () => {
     공정명: prd.PRC_NAME,
     설비유형: prd.FAC_TYPE,
     작성자: prd.PRC_WRITER,
-    등록일자: prd.PRC_RDATE.substring(0, 10),
+    등록일자: prd.PRC_RDATE ? prd.PRC_RDATE.substring(0, 10) : null,
     비고: prd.PRC_NOTE
   }));
 };
@@ -153,13 +155,13 @@ const submitForm = async () => {
 
     // 신규 등록 시 중복이면 막기
     if (!form.value.prcCode && exists) {
-      $toast.warning('이미 등록된 공정명입니다.', { position: 'top-right' });
+      $toast.warning('이미 등록된 공정명입니다.', { position: 'top-right', duration: 1000 });
       return;
     }
 
     // 필수 입력 체크
     if (!form.value.type || !form.value.prcName) {
-      $toast.warning('공정명과 설비유형을 입력해주세요.', { position: 'top-right' });
+      $toast.warning('공정명과 설비유형을 입력해주세요.', { position: 'top-right', duration: 1000 });
       return;
     }
 
@@ -174,13 +176,13 @@ const submitForm = async () => {
         PRC_CODE: form.value.prcCode
       };
       await axios.post('http://localhost:3000/masterPrcUpdate', updateRow);
-      $toast.success('공정이 수정되었습니다.', { position: 'top-right' });
+      $toast.success('공정이 수정되었습니다.', { position: 'top-right', duration: 1000 });
       await prcList();
     } else {
       // 신규 등록
       const newRow = {
         PRC_NAME: form.value.prcName,
-        PRC_TYPE: form.value.type,
+        FAC_TYPE: form.value.type,
         PRC_WRITER: form.value.writer,
         PRC_DATE: form.value.date,
         PRC_NOTE: form.value.note
@@ -195,6 +197,41 @@ const submitForm = async () => {
   }
 };
 
+const del = async () => {
+  if (!form.value.prcCode) {
+    $toast.warning('삭제할 공정을 선택하세요.', { position: 'top-right', duration: 1000 });
+    return;
+  }
+  try {
+    await axios.post('http://localhost:3000/masterPrcDelete', { PRC_CODE: form.value.prcCode });
+    $toast.success(`${form.value.prcName}(이)가 삭제되었습니다.`, { position: 'top-right', duration: 1000 });
+
+    resetForm();
+  } catch {
+    $toast.error('삭제 중 오류가 발생했습니다.', { position: 'top-right', duration: 1000 });
+  }
+};
+
+// 검색
+const searchKeyword = ref('');
+const searchData = async () => {
+  if (!searchKeyword.value) {
+    $toast.warning('공정이 입력되지 않았습니다', { position: 'top-right', duration: 1000 });
+    return;
+  }
+  const condition = { PRC_NAME: searchKeyword.value };
+  const res = await axios.post('http://localhost:3000/masterPrcSearch', condition);
+  rowData1.value = res.data.map((prd) => ({
+    공정코드: prd.PRC_CODE,
+    공정명: prd.PRC_NAME,
+    설비유형: prd.FAC_TYPE,
+    작성자: prd.PRC_WRITER,
+    등록일자: prd.PRC_RDATE ? prd.PRC_RDATE.substring(0, 10) : null,
+    비고: prd.PRC_NOTE
+  }));
+  $toast.success('검색이 완료되었습니다.', { position: 'top-right', duration: 1000 });
+};
+
 // 폼 데이터를 초기화하는 함수
 const resetForm = () => {
   form.value.prcCode = '';
@@ -203,8 +240,7 @@ const resetForm = () => {
   form.value.type = '';
   form.value.writer = authStore.user?.name || '';
   // writer와 date는 그대로 유지
-
-  $toast.info('초기화되었습니다.', { position: 'top-right', duration: 1000 });
+  prcList();
 };
 
 // 행선택시 등록 폼으로

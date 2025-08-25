@@ -17,8 +17,8 @@ const commonAuth = async () => {
   return list;
 };
 // 사원 검색
-const masterEmpSelectName = async (empName) => {
-  const params = [empName];
+const masterEmpSelectName = async (data) => {
+  const params = [data.EMP_NAME];
   let list = await mariadb.query("masterEmpSelectName", params);
   return list;
 };
@@ -193,6 +193,19 @@ const masterMatUpdate = async (data) => {
   let result = await mariadb.query("masterMatUpdate", params);
   return result;
 };
+// 자재관리 - 삭제
+const masterMatDelete = async (data) => {
+  const params = [data.MAT_CODE];
+  let result = await mariadb.query("masterMatDelete", params);
+  return result;
+};
+
+// 자재관리 - 검색
+const masterMatSearch = async (data) => {
+  const params = [data.MAT_NAME];
+  let result = await mariadb.query("masterMatSearch", params);
+  return result;
+};
 
 // 재공품관리 - 조회
 const masterWIPSelect = async () => {
@@ -210,6 +223,19 @@ const masterWIPModal = async () => {
 const masterWIPType = async () => {
   let list = await mariadb.query("masterWIPType");
   return list;
+};
+// 재공품관리 - 삭제
+const masterWIPDelete = async (data) => {
+  const params = [data.WIP_CODE];
+  let result = await mariadb.query("masterWIPDelete", params);
+  return result;
+};
+
+// 재공품관리 - 검색
+const masterWIPSearch = async (data) => {
+  const params = [data.WIP_NAME];
+  let result = await mariadb.query("masterWIPSearch", params);
+  return result;
 };
 
 // 공정관리 - 단위
@@ -256,7 +282,19 @@ const masterPrcUpdate = async (data) => {
   let result = await mariadb.query("masterPrcUpdate", params);
   return result;
 };
+// 공정관리 - 삭제
+const masterPrcDelete = async (data) => {
+  const params = [data.PRC_CODE];
+  let result = await mariadb.query("masterPrcDelete", params);
+  return result;
+};
 
+// 공정관리 - 검색
+const masterPrcSearch = async (data) => {
+  const params = [data.PRC_NAME];
+  let result = await mariadb.query("masterPrcSearch", params);
+  return result;
+};
 // 재공품관리 - 등록
 const masterWIPInsert = async (data) => {
   const params = [
@@ -375,6 +413,13 @@ const diaPrdList = async () => {
   let list = await mariadb.query("diaPrdList");
   return list;
 };
+// 공정흐름도  - 검색
+const diaPrdSearch = async (data) => {
+  const params = [data.PRD_NAME];
+  let result = await mariadb.query("diaPrdSearch", params);
+  return result;
+};
+
 // 공정흐름도 - 모달조회
 const diaModalList = async () => {
   let list = await mariadb.query("diaModalList");
@@ -436,6 +481,13 @@ const wrSelect = async (data) => {
   let list = await mariadb.query("wrSelect", params);
   return list;
 };
+
+//창고 품목 모달
+const InfoModal = async () => {
+  let list = await mariadb.query("InfoModal");
+  return list;
+};
+
 // 출하 - 조회
 const wrShip = async () => {
   let list = await mariadb.query("wrShip");
@@ -457,6 +509,52 @@ const wrShipUpdate = async (rows) => {
 const wrDelivery = async () => {
   let list = await mariadb.query("wrDelivery");
   return list;
+};
+
+// 창고관리 - 등록
+const wrInfoInsert = async (data) => {
+  const params = [
+    data.WR_AREANO,
+    data.WR_AREANO,
+    data.WR_NO,
+    data.WR_PRD_ID,
+    data.WR_TYPE,
+    data.WR_NO,
+  ];
+  let result = await mariadb.query("wrInfoInsert", params);
+  return result;
+};
+// 창고관리 - 수정
+const wrInfoUpdate = async (data) => {
+  const params = [
+    data.WR_AREANO,
+    data.WR_SECTION,
+    data.WR_PRD_ID,
+    data.WR_TYPE,
+    data.WR_NO,
+    data.WR_SECTION,
+  ];
+  let result = await mariadb.query("wrInfoUpdate", params);
+  return result;
+};
+
+// 창고관리 - 삭제
+const wrDelete = async (data) => {
+  const params = [data.WR_SECTION];
+  let result = await mariadb.query("wrDelete", params);
+  return result;
+};
+// 창고관리 - 모달 삭제
+const wrModalDelete = async (data) => {
+  const params = [data.WR_NO];
+  let result = await mariadb.query("wrModalDelete", params);
+  return result;
+};
+// 창고관리 - 모달 추가
+const wrModalInsert = async (data) => {
+  const params = [data.WR_NAME, data.WR_ADDR];
+  let result = await mariadb.query("wrModalInsert", params);
+  return result;
 };
 module.exports = {
   masterEmpSelect,
@@ -511,4 +609,17 @@ module.exports = {
   wrShip,
   wrShipUpdate,
   wrDelivery,
+  masterMatDelete,
+  masterWIPDelete,
+  masterMatSearch,
+  diaPrdSearch,
+  masterPrcDelete,
+  masterPrcSearch,
+  masterWIPSearch,
+  InfoModal,
+  wrInfoInsert,
+  wrInfoUpdate,
+  wrDelete,
+  wrModalDelete,
+  wrModalInsert,
 };

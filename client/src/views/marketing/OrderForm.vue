@@ -67,23 +67,31 @@ import axios from 'axios';
 import MoDal from '../common/NewModal.vue';
 import BaseBreadcrumb from '@/components/shared/BaseBreadcrumb.vue';
 import UiParentCard from '@/components/shared/UiParentCard.vue';
-const rowSelection = ref({
-  mode: 'multiRow'
-});
+
+// 토스트
+import { useToast } from 'vue-toast-notification';
+import 'vue-toast-notification/dist/theme-bootstrap.css';
+const $toast = useToast();
+
+// 로그인 세션 정보
+import { useAuthStore } from '@/stores/auth';
+const authStore = useAuthStore();
+
+const rowSelection = ref({ mode: 'multiRow' });
 const order = ref({
   dDay: '',
   rDay: '',
-  writer: '',
+  writer: authStore.user?.name || '',
   client: '',
   client_code: ''
 });
+
 // 페이지 상단 Title, BreadCrumb, Theme
 const breadcrumbs = shallowRef([
   { title: '영업', disabled: true, href: '#' },
   { title: '주문서', disabled: true, href: '#' },
   { title: '주문서 등록', disabled: false, href: '#' }
 ]);
-
 const page = ref({ title: '주문서 등록' });
 const quartz = themeQuartz;
 
@@ -102,7 +110,6 @@ onMounted(() => {
 });
 
 const gridApiMat = ref(null); // mat 그리드 API 저장용
-
 const onGridReadyMat = (params) => {
   gridApiMat.value = params.api;
 };
@@ -118,6 +125,7 @@ const orderCol = ref([
 ]);
 
 const orderRow = ref([]);
+
 // 수량 값 검증
 const onCellValueChanged = (params) => {
   if (params.colDef.field === '주문수량') {
@@ -125,13 +133,13 @@ const onCellValueChanged = (params) => {
     if (!Number.isFinite(v) || v <= 0) {
       params.data.주문수량 = 1;
       params.api.applyTransaction({ update: [params.data] });
+      $toast.warning('수량은 1 이상이어야 합니다.');
     } else {
       params.data.주문수량 = v;
       params.api.applyTransaction({ update: [params.data] });
     }
   }
 };
-/**/
 
 /* 거래처 모달 */
 const modalRef = ref(null);
@@ -143,7 +151,6 @@ const materialColDefs = [
   { field: '거래처명', headerName: '거래처명', flex: 1 },
   { field: '거래담당자', headerName: '거래담당자', flex: 1 }
 ];
-
 const materialRowData = ref([]);
 
 const modalList = async () => {
@@ -156,11 +163,10 @@ const modalList = async () => {
     }));
   } catch (e) {
     console.error(e);
-    return;
+    $toast.error('거래처 데이터를 불러오지 못했습니다.');
   }
 };
 
-//모달 열때 데이터값 자식컴포넌트로
 const accModal = async (title, rowData, colDefs) => {
   modalTitle.value = title;
   modalRowData.value = rowData;
@@ -173,9 +179,7 @@ const accModal = async (title, rowData, colDefs) => {
 const modalConfirm = (selectedRow) => {
   order.value.client = selectedRow.거래처명;
   order.value.client_code = selectedRow.거래처코드;
-  console.log(order.value.client_code);
 };
-/**/
 
 /* 제품 모달 */
 const itemModalRef = ref(null);
@@ -204,7 +208,7 @@ const modalList2 = async () => {
     }));
   } catch (e) {
     console.error(e);
-    return;
+    $toast.error('제품 데이터를 불러오지 못했습니다.');
   }
 };
 
@@ -218,66 +222,74 @@ const itemModal = async (title, rowData, colData) => {
 };
 
 const itemModalConfirm = (row) => {
-  console.log(row);
   orderRow.value.unshift(row);
+  $toast.success('제품이 추가되었습니다.');
 };
-/**/
 
+/* 초기화 */
 const reset = () => {
   order.value = { client: '', dDay: '', rDay: '' };
   orderRow.value = [];
   selectedAccount.value = null;
   selectedItem.value = null;
+  $toast.info('입력값이 초기화되었습니다.');
 };
 
-// 저장버튼
+/* 저장버튼 */
 const submit = async () => {
   if (!order.value.client || !order.value.dDay) {
-    alert('거래처와 납기일을 확인하세요');
+    $toast.warning('거래처와 납기일을 확인하세요.');
     return;
   }
   const selectedRows = gridApiMat.value.getSelectedRows();
   if (selectedRows.length === 0) {
-    alert('등록할 제품을 선택하세요');
+    $toast.warning('등록할 제품을 선택하세요.');
     return;
   }
   const invalidQty = selectedRows.some((row) => !row.주문수량 || row.주문수량 <= 0);
   if (invalidQty) {
-    alert('모든 제품의 수량을 입력해주세요');
+    $toast.warning('모든 제품의 수량을 입력해주세요.');
     return;
   }
 
-  // 1) 헤더 저장 → REQ_ID 반환
-  const condition = {
-    CUS_ID: order.value.client_code,
-    REQ_DATE: order.value.rDay,
-    REQ_DDAY: order.value.dDay,
-    WRITER: order.value.writer
-  };
-  const res = await axios.post('http://localhost:3000/reqInsert', condition);
-  if (!res.data?.success) {
-    alert('주문서(헤더) 등록 실패');
-    return;
-  }
-  const reqId = res.data.reqId;
+  try {
+    // 1) 헤더 저장 → REQ_ID 반환
+    const condition = {
+      CUS_ID: order.value.client_code,
+      REQ_DATE: order.value.rDay,
+      REQ_DDAY: order.value.dDay,
+      WRITER: order.value.writer
+    };
+    const res = await axios.post('http://localhost:3000/reqInsert', condition);
+    if (!res.data?.success) {
+      $toast.error('주문서(헤더) 등록 실패');
+      return;
+    }
+    const reqId = res.data.reqId;
 
-  // 2) 상세 저장 (반환된 reqId 사용)
-  const payload = {
-    reqId,
-    rows: selectedRows.map((r) => ({
-      REQ_QTY: Number(r.주문수량),
-      PRD_CODE: r.제품코드
-    }))
-  };
-  const res2 = await axios.post('http://localhost:3000/reqDetailInsert', payload);
-  if (!res2.data?.success) {
-    alert('주문서(상세) 등록 실패');
-    return;
+    // 2) 상세 저장
+    const payload = {
+      reqId,
+      rows: selectedRows.map((r) => ({
+        REQ_QTY: Number(r.주문수량),
+        PRD_CODE: r.제품코드
+      }))
+    };
+    const res2 = await axios.post('http://localhost:3000/reqDetailInsert', payload);
+    if (!res2.data?.success) {
+      $toast.error('주문서(상세) 등록 실패');
+      return;
+    }
+
+    $toast.success(`주문서 등록완료 (번호: ${reqId})`);
+
+    // 초기화
+    order.value = { dDay: '', rDay: '', writer: '', client: '', client_code: '' };
+    orderRow.value = [];
+  } catch (e) {
+    console.error(e);
+    $toast.error('주문서 등록 중 오류가 발생했습니다.');
   }
-  alert(`주문서 등록완료 (번호: ${reqId})`);
-  // 초기화
-  order.value = { dDay: '', rDay: '', writer: '', client: '', client_code: '' };
-  orderRow.value = [];
 };
 </script>
 

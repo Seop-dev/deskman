@@ -51,7 +51,7 @@
             </v-col>
 
             <v-col cols="6">
-              <v-text-field label="등록일자" v-model="form.addDate" type="date" dense outlined />
+              <v-text-field label="등록일자" v-model="form.addDate" type="date" dense outlined style="margin-bottom: 13px" />
             </v-col>
           </v-row>
         </div>
@@ -100,7 +100,9 @@ import axios from 'axios';
 import MoDal from '../common/NewModal.vue';
 const quartz = themeQuartz;
 const today = new Date().toISOString().split('T')[0];
-const form = ref({ writer: '', addDate: today, bomVer: '', bomCode: '', prdName: '' });
+import { useAuthStore } from '@/stores/auth';
+const authStore = useAuthStore();
+const form = ref({ writer: authStore.user?.name || '', addDate: today, bomVer: '', bomCode: '', prdName: '' });
 
 import { useToast } from 'vue-toast-notification';
 import 'vue-toast-notification/dist/theme-bootstrap.css';
@@ -216,6 +218,10 @@ const onCellValueChanged = (event) => {
 // 검색 버튼
 const searchKeyword = ref('');
 const searchData = async () => {
+  if (!searchKeyword.value) {
+    $toast.warning('제품이 입력되지 않았습니다', { position: 'top-right', duration: 1000 });
+    return;
+  }
   const condition = { PRD_NAME: searchKeyword.value };
   try {
     const res = await axios.post('http://localhost:3000/bomSearch', condition);
@@ -240,12 +246,12 @@ const searchData = async () => {
 // 폼 데이터를 초기화하는 함수
 const resetForm = () => {
   form.value = {
-    writer: '',
+    writer: authStore.user?.name || '',
     addDate: ''
   };
   bomData.value = [];
   matData.value = [];
-  $toast.info('폼이 초기화되었습니다.', { position: 'top-right', duration: 1000 });
+  prdList();
 };
 
 // bom 변수
@@ -298,7 +304,7 @@ const submitForm = async () => {
   console.log(selectedProduct.value);
   const condition = {
     PRD_CODE: selectedProduct.value.제품코드,
-    BOM_WRITER: '김태완', // 세션에서 받아야함
+    BOM_WRITER: selectedProduct.value.작성자, // 세션에서 받아야함
     BOM_VER: selectedBomVer.value
   };
   try {

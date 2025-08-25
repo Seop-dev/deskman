@@ -210,7 +210,7 @@ const resetForm = () => {
     addDate: new Date().toISOString().split('T')[0]
   };
   prcData.value = [];
-  $toast.info('초기화되었습니다.', { position: 'top-right', duration: 1000 });
+  prdList();
 };
 
 // 공정 삭제
@@ -289,6 +289,7 @@ const searchData = async () => {
     작성자: prd.PRD_WRITER,
     등록일: prd.PRD_DATE.substring(0, 10)
   }));
+  $toast.success('검색이 완료되었습니다.', { position: 'top-right', duration: 1000 });
 };
 </script>
 
