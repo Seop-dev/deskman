@@ -236,6 +236,7 @@ const searchData = async () => {
 const resetForm = () => {
   form.value.prcCode = '';
   form.value.prcName = '';
+  form.value.date = today;
   form.value.note = '';
   form.value.type = '';
   form.value.writer = authStore.user?.name || '';

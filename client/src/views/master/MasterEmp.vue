@@ -95,8 +95,6 @@ import 'vue-toast-notification/dist/theme-bootstrap.css';
 const $toast = useToast();
 
 // 로그인 세션 정보
-import { useAuthStore } from '@/stores/auth';
-const authStore = useAuthStore();
 
 //{ position: 'top-right', duration: 1000 }
 
@@ -119,7 +117,7 @@ const quartz = themeQuartz;
 const form = ref({
   empNo: '', //
   phone: '',
-  empName: authStore.user?.name || '',
+  empName: '',
   hireDate: '',
   auth: '',
   dept: '',
@@ -278,7 +276,7 @@ const del = async () => {
 // 폼 데이터를 초기화하는 함수
 const resetForm = () => {
   form.value = {
-    empName: authStore.user?.name || '',
+    empName: '',
     hireDate: '',
     empNo: '',
     email: '',
@@ -339,7 +337,7 @@ const openModal = async (title, rowData, colDefs) => {
 
 // 모달에서 확인시 행추가
 const modalConfirm = async (selectedRow) => {
-  form.value.size = selectedRow.규격;
+  form.value.dept = selectedRow.부서명;
 };
 </script>
 
