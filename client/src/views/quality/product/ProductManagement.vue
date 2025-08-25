@@ -6,10 +6,11 @@
       <v-col cols="3">
         <v-text-field label="생산완료일자" v-model="form.finished_at" type="date" dense outlined />
       </v-col>
+      <v-col justify="end" class="mb-4">
+        <v-btn color="error" variant="elevated" @click="resetForm">초기화</v-btn>
+      </v-col>
     </v-row>
-    <v-row justify="end" class="mb-4">
-      <v-btn color="error" variant="elevated" @click="resetForm">초기화</v-btn>
-    </v-row>
+
     <br />
     <ag-grid-vue
       :rowData="gridData"

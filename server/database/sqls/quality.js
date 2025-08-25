@@ -95,9 +95,35 @@ const rejectPrdDetail = `
       (GetNextRJT_PRD_ID(), ?, ?, GetNextRJT_CODE(), ?)  
 `;
 
+//품질 검사 수치값 등록
+const InsertQualityResult = `
+INSERT INTO QUALITY_STD_RESULT (
+  Q_RESULT_ID, Q_STD_ID, ALLOWED_ITEM, 
+  MEASURED_VALUE, STATUS, RJT_REASON
+) VALUES (GetNextQ_RESULT_ID(), ?, ?, ?, ?, ?)
+`;
+
+// 품질 적용 연결 등록
+const InsertQualityApply = `
+INSERT INTO QUALITY_APPLY (
+  Q_APPLY_ID, Q_STD_ID, PRD_CERT_ID
+) VALUES (GetNextQ_APPLY_ID(), ?, ?)
+`;
+
 // 제품성적서조회
-const selectProductCertificate = `SELECT PRD_CERT_ID, PRD_CODE, PRD_NAME, Q_CHECKED_DATE, PRD_TYPE
-FROM PRODUCT_CERTIFICATE;`;
+const selectProductCertificate = `
+SELECT *
+FROM PRODUCT_CERTIFICATE
+`;
+// `SELECT PRD_CERT_ID, PRD_CODE, PRD_NAME, Q_CHECKED_DATE, PRD_TYPE
+// FROM PRODUCT_CERTIFICATE`;
+
+// 제품성적서 하단기준
+const selectPrdCert = `
+SELECT STD_NAME, ALLOWED_VALUE
+FROM QUALITY_STANDARD
+WHERE std_type = '완제품'
+`;
 
 // 제품성적서 단건조회
 const selectPrdCertReport = `
@@ -122,8 +148,6 @@ LEFT JOIN REJECTED_PRODUCT rp
 // 제품성적서 품질기준조회 및 수치값
 // const prdCertValue = `
 
-// `;
-
 // 품질기준조회
 const selectQStandard = `
 SELECT
@@ -137,7 +161,7 @@ JOIN QUALITY_STANDARD qs
 WHERE cm.use_yn = 'Y'
   AND cm.group_code IN ('CC', 'WS')
   AND cm.code_name IN ('완제품','반제품','원목','합판')
-`;
+  `;
 
 // 품질기준변경
 const UpdateQStandard = `
@@ -176,6 +200,7 @@ module.exports = {
   rejectPrd,
   rejectPrdDetail,
   selectProductCertificate,
+  selectPrdCert,
   selectPrdCertReport,
   selectQStandard,
   UpdateQStandard,
