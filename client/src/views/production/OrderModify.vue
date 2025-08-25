@@ -169,7 +169,7 @@ import BaseBreadcrumb from '@/components/shared/BaseBreadcrumb.vue';
 import UiParentCard from '@/components/shared/UiParentCard.vue';
 import { AgGridVue } from 'ag-grid-vue3';
 
-const API = import.meta?.env?.VITE_API_URL || 'http://localhost:3000';
+const API = import.meta?.env?.VITE_API_URL;
 
 const page = ref({ title: '작업지시 수정/삭제' });
 const breadcrumbs = shallowRef([

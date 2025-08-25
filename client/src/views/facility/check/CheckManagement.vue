@@ -90,7 +90,7 @@ const breadcrumbs = shallowRef([
 ]);
 
 // API 경로
-const apiBase = import.meta?.env?.VITE_API_BASE || '/api';
+const apiBase = import.meta?.env?.VITE_API_URL;
 const INSPECTION_COMPLETE_API = `${apiBase}/facility/inspection/complete`;
 const PROCESS_API = `${apiBase}/process`;
 
