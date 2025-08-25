@@ -95,7 +95,6 @@ const noop = () => {};
 
 /* 컬럼(전체 vs 공정별 탭에서 공정명 숨김) */
 const headersAll = [
-  { title: '공정순서', value: 'orderIdx', width: 90 },
   { title: '공정명', value: 'processName', width: 120 },
   { title: '지시번호', value: 'issueNumber' },
   { title: '제품명', value: 'productName' },
