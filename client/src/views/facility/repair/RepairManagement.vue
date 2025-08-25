@@ -74,7 +74,7 @@ ModuleRegistry.registerModules([AllCommunityModule]);
 const quartz = themeQuartz;
 
 // API
-const apiBase = import.meta?.env?.VITE_API_BASE || '/api';
+const apiBase = import.meta?.env?.VITE_API_URL;
 const PROCESS_API = `${apiBase}/process`;
 
 // 코드 라벨맵

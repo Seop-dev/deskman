@@ -86,7 +86,7 @@ const $toast = useToast();
 ModuleRegistry.registerModules([AllCommunityModule]);
 const quartz = themeQuartz;
 
-const apiBase = import.meta?.env?.VITE_API_URL || 'http://localhost:3000';
+const apiBase = import.meta?.env?.VITE_API_URL;
 const PROCESS_API = `${apiBase}/process`;
 
 let fcMap = new Map();

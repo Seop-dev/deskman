@@ -175,7 +175,7 @@ import BaseBreadcrumb from '@/components/shared/BaseBreadcrumb.vue';
 import UiParentCard from '@/components/shared/UiParentCard.vue';
 import { AgGridVue } from 'ag-grid-vue3';
 
-const API = import.meta?.env?.VITE_API_URL || 'http://localhost:3000';
+const API = import.meta?.env?.VITE_API_URL;
 /* 페이지 타이틀/브레드크럼 */
 const page = ref({ title: '작업지시 관리' });
 const breadcrumbs = shallowRef([
