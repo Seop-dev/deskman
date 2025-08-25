@@ -309,10 +309,16 @@ async function saveForm() {
   if (isPass) {
     await axios.post('http://localhost:3000/passmat', passData);
     $toast.info('합격등록이 완료되었습니다.', { position: 'top-right', duration: 1000 });
+    await axios.post('http://localhost:3000/chmatstatus', {
+      RECEIPT_NO: passData.RECEIPT_NO
+    });
     router.push('/qm/matlst');
   } else {
     await axios.post('http://localhost:3000/rejectmat', rjtData);
     $toast.info('불합격등록이 완료되었습니다.', { position: 'top-right', duration: 1000 });
+    await axios.post('http://localhost:3000/chmatstatus', {
+      RECEIPT_NO: passData.RECEIPT_NO
+    });
     router.push('/qm/matlst');
   }
 }

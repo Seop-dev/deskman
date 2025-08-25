@@ -61,6 +61,13 @@ VALUES
   (GetNextRJT_MAT_ID(), ?, ?, ?, ?, ?, '등록', ?)
 `;
 
+// 원자재등록 완료 후 TMP_STATUS상태 교체
+const chTmpStatus = `
+UPDATE MAT_IN_TMP
+SET TMP_STATUS = '입고 완료'
+WHERE TMP_STATUS = '검수 대기' AND RECEIPT_NO = ?
+`;
+
 // 제품공정조회
 const taskPrd = `
 SELECT q.id, q.wo_id, q.finished_at, q.qty,
@@ -113,6 +120,7 @@ const sqlInsertResult = `
 const selectProductCertificate = `
 SELECT *
 FROM PRODUCT_CERTIFICATE
+ORDER BY PRD_CERT_ID DESC
 `;
 // `SELECT PRD_CERT_ID, PRD_CODE, PRD_NAME, Q_CHECKED_DATE, PRD_TYPE
 // FROM PRODUCT_CERTIFICATE`;
@@ -201,6 +209,7 @@ module.exports = {
   matManagement,
   passMat,
   rejectMat,
+  chTmpStatus,
   taskPrd,
   passPrd,
   rejectPrd,
